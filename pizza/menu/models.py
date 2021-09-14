@@ -2,12 +2,26 @@ from django.db import models
 
 # Create your models here.
 
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
+class Pizza(models.Model):
+    pizza_name = models.CharField(max_length=200)
+    vegeterian = models.BooleanField(default=0)
+    price = models.IntegerField(default=10)
+
+    def __str__(self):
+        return self.pizza_name
 
 
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
-    votes = models.IntegerField(default=0)
+class Orders(models.Model):
+    customer_id = models.IntegerField(default=0) # must be a FK later
+    order_id = models.IntegerField(default=0)
+    order_time = models.DateTimeField('orderedTime')
+    order_status = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.order_id
+
+class Order_Pizza(models.Model):
+    pizza_id = models.ForeignKey(Pizza, on_delete=models.CASCADE)
+    order_id = models.ForeignKey(Orders, on_delete=models.CASCADE)
+
+
