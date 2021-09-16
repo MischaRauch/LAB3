@@ -1,0 +1,9 @@
+{% if pizza_list %}
+    <ul>
+    {% for pizza in pizza_list %}
+        <li><a href="{% url 'detail' pizza.id %}">{{ pizza }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No pizzas are available.</p>
+{% endif %}

@@ -6,7 +6,7 @@ class Pizza(models.Model):
     pizza_name = models.CharField(max_length=200)
     vegeterian = models.BooleanField(default=0)
     price = models.IntegerField(default=10)
-
+        
     def __str__(self):
         return self.pizza_name
 
