@@ -19,6 +19,6 @@ from django.urls.conf import include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('menu.urls'))
+    path('', include('restaurant.view.urls'))
 ]
  
