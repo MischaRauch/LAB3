@@ -1,12 +1,16 @@
-from django.db import models
+from django.db import models #similar to SQLalchemy 
 
 # Create your models here.
 
 class Pizza(models.Model):
     pizza_id = models.AutoField(primary_key=True)    
     pizza_name = models.CharField(max_length=200)
-    def __str__(self): #function: looking up pizzas 
-        return self.pizza_name
+    def __str__(self): #function: looking up pizzas         
+        return self.pizza_name        
+
+    def __repr__(self): 
+        return f"Pizza {self.pizza_id}, {self.pizza_name}"  
+        #f: fortmat the return so that it retuns the variable             
 
 class Pizza_toppings(models.Model):
     pizza_toppings_id = models.AutoField(primary_key=True)
