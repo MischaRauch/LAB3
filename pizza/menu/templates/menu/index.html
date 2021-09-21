@@ -1,7 +1,7 @@
 {% if pizza_list %}
     <ul>
     {% for pizza in pizza_list %}
-        <li><a href="{% url 'detail' pizza.id %}">{{ pizza }}</a></li>
+        <li><a href="{% url 'detail' pizza.pizza_id %}">{{ pizza }}</a></li>
     {% endfor %}
     </ul>
 {% else %}
