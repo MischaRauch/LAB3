@@ -1,7 +1,7 @@
 #return one pizza
 from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
-from restaurant.model.models import pizza,desert,drink 
+from restaurant.model.models import pizza,desert,drink, address, customer   
 from django.db import models
 
 
@@ -70,3 +70,20 @@ def is_pizza_vegetarian(id):
 	return True 
 
 	
+def create_address_customer(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
+    #first create address
+    new_address_id = create_only_address(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city)
+    #after address creation we can create a customer
+    create_only_customer(first_name= first_name, last_name= last_name, email= email, phone= phone, address_id= new_address_id)
+
+
+def create_only_address(postal_code, country, street, house_number, city):
+    #create new address
+    new_adress = address.objects.get_or_create(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city)
+    #tuple needs name to get address and flag if object created or not
+    (customer_address, flag) = new_adress
+    return customer_address
+
+def create_only_customer(first_name, last_name, email, phone, address_id):
+    #create new customer based on address information
+    customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
