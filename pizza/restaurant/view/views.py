@@ -9,10 +9,13 @@ def index(request):
     return render(request, 'restaurant/index.html', context)
     
 
-def detail(request, pizza_id):
-    selected_pizza2=  queries.get_pizzas(pizza_id)  
+def detail(request, pizza_id): 
     selected_pizza = get_object_or_404(pizza, pk=pizza_id)
+
+    selected_pizza2=  queries.get_pizzas(pizza_id) 
+    drink = queries.get_drink(pizza_id)
     print ('im here          ' )
+    vegi = queries.vegeterian(pizza_id)
     print (selected_pizza2)
     return render(request, 'restaurant/selectPizzaToppings.html', {'pizza': selected_pizza})
 

@@ -1,4 +1,6 @@
 #return one pizza
+from restaurant.model.models import topping
+from restaurant.model.models import drink
 from restaurant.model.models import pizza
 from django.db import models
 
@@ -10,6 +12,24 @@ def get_pizzas():
 def get_pizzas(id): 
 	return pizza.objects.get(pizza_id= id)  
 
+#return 1 drink based on id
+def get_drink(id):
+	choosenDrink = drink.objects.get(drink_id= id)
+
+	price2 = drink.objects.filter(drink_id= id).only('drink_price')
+	foo = drink.objects.filter()
+	price = drink.objects.only('drink_price').get(drink_id=id)
+	price2 = list(price2 )
+	print('CHOSEN DRINK', choosenDrink, 'PRICE', price2)
+	return price
+	#return drink.objects.get(drink_price= choosenDrink)
+
+def get_only_pizza(id):
+	pizza.objects.filter(pizza_id = id).get('pizza_name')
+
+def vegeterian(id):
+	vegeterian = topping.objects.get(topping_id = id)
+	print('VEGETERIAN ', vegeterian)
 
 #***(1)Returns all customers from customer table
 #customers = Customer.objects.all()

@@ -21,7 +21,7 @@ class topping(models.Model):
     vegeterian = models.BooleanField()
 
     def __str__(self): 
-        return self.topping_id
+        return self.topping_name
 
 class pizza_toppings(models.Model):
     pizza_toppings_id = models.AutoField(primary_key=True)
@@ -37,14 +37,14 @@ class drink(models.Model):
     drink_price = models.FloatField() 
     
     def __str__(self): 
-        return self.drink_id
+        return self.drink_name
 
 class desert(models.Model):
     desert_id = models.AutoField(primary_key=True)    
     desert_name = models.CharField(max_length=100)
     desert_price = models.FloatField() 
     def __str__(self): 
-        return self.desert_id
+        return self.desert_name
 
 class address(models.Model):
     address_id = models.AutoField(primary_key=True)    
@@ -74,7 +74,7 @@ class employee(models.Model):
     area_code = models.CharField(max_length=100)
     
     def __str__(self): 
-        return self.employee_id
+        return self.first_name
 
 class delivery(models.Model):
     Preparation = 'On preparation'
