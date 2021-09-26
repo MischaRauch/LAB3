@@ -13,7 +13,7 @@ INSERT INTO restaurant_topping VALUES
     (2, 'ham', 4, false),
     (3, 'tomateos', 1, true)
 ;
-INSERT INTO restaurant_pizza_toppings VALUES 
+INSERT INTO restaurant_pizza_toppings VALUES  #pizza_topping_id, pizza_id, topping_id 
     (1, 1, 1),
     (2, 1, 3),
     (3, 2, 1),

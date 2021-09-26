@@ -1,101 +1,72 @@
 #return one pizza
+from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
-from restaurant.model.models import drink
-from restaurant.model.models import pizza
+from restaurant.model.models import pizza,desert,drink 
 from django.db import models
 
-#returns all pizzas
-def get_pizzas(): 
-	return pizza.objects.all() 
 
 #returns 1 pizza id based on id
 def get_pizzas(id): 
 	return pizza.objects.get(pizza_id= id)  
 
-#return 1 drink based on id
-def get_drink(id):
-	choosenDrink = drink.objects.get(drink_id= id)
+#return 1 pizza name 
+def get_pizza_name(id):
+	return pizza.objects.only('pizza_name').get(pk=id)
 
-	price2 = drink.objects.filter(drink_id= id).only('drink_price')
-	foo = drink.objects.filter()
-	price = drink.objects.only('drink_price').get(drink_id=id)
-	price2 = list(price2 )
-	print('CHOSEN DRINK', choosenDrink, 'PRICE', price2)
-	return price
-	#return drink.objects.get(drink_price= choosenDrink)
+def get_desert(id): 
+	return desert.objects.get(desert_id= id) 
 
-def get_only_pizza(id):
-	pizza.objects.filter(pizza_id = id).get('pizza_name')
+def get_desert_name(id):
+	return desert.objects.only('desert_name').get(pk=id)
 
-def vegeterian(id):
-	vegeterian = topping.objects.get(topping_id = id)
-	print('VEGETERIAN ', vegeterian)
+def get_drink(id): 
+	return drink.objects.get(drink_id= id) 
 
-#***(1)Returns all customers from customer table
-#customers = Customer.objects.all()
+def get_drink_name(id):
+	return drink.objects.only('drink_name').get(pk=id)
 
-#(2)Returns first customer in table
-#firstCustomer = Customer.objects.first()
 
-#(3)Returns last customer in table
-#lastCustomer = Customer.objects.last()
+#returns desert price 
+def get_desert_price(id):
+	test = desert.objects.filter(desert_id = id).values('desert_price')
+	for selected_desert in test:
+		return selected_desert.get('desert_price')
 
-#(4)Returns single customer by name
-#customerByName = Customer.objects.get(name='Peter Piper')
-#
-##***(5)Returns single customer by name
-#customerById = Customer.objects.get(id=4)
-#
-##***(6)Returns all orders related to customer (firstCustomer variable set above)
-#firstCustomer.order_set.all()
-#
-##(7)***Returns orders customer name: (Query parent model values)
-#order = Order.objects.first() 
-#parentName = order.customer.name
-#
-##(8)***Returns products from products table with value of "Out Door" in category attribute
-#products = Product.objects.filter(category="Out Door")
-#
-##(9)***Order/Sort Objects by id
-#leastToGreatest = Product.objects.all().order_by('id') 
-#greatestToLeast = Product.objects.all().order_by('-id') 
-#
-#
-##(10) Returns all products with tag of "Sports": (Query Many to Many Fields)
-#productsFiltered = Product.objects.filter(tags__name="Sports")
-#
-#'''
-#(11)Bonus
-#Q: If the customer has more than 1 ball, how would you reflect it in the database?
-#A: Because there are many different products and this value changes constantly you would most 
-#likly not want to store the value in the database but rather just make this a function we can run
-#each time we load the customers profile
-#'''
-#
-##Returns the total count for number of time a "Ball" was ordered by the first customer
-#ballOrders = firstCustomer.order_set.filter(product__name="Ball").count()
-#
-##Returns total count for each product orderd
-#allOrders = {}
-#
-#for order in firstCustomer.order_set.all():
-#	if order.product.name in allOrders:
-#		allOrders[order.product.name] += 1
-#	else:
-#		allOrders[order.product.name] = 1
-#
-##Returns: allOrders: {'Ball': 2, 'BBQ Grill': 1}
-#
-#
-##RELATED SET EXAMPLE
-#class ParentModel(models.Model):
-#	name = models.CharField(max_length=200, null=True)
-#
-#class ChildModel(models.Model):
-#	parent = models.ForeignKey(Customer)
-#	name = models.CharField(max_length=200, null=True)
-#
-#parent = ParentModel.objects.first()
-##Returns all child models related to parent
-#parent.childmodel_set.all()
-#
+#returns drink price 
+def get_drink_price(id):
+	test = drink.objects.filter(drink_id = id).values('drink_price')
+	for selected_drink in test:
+		return selected_drink.get('drink_price')
+
+#returns topping price 
+def get_topping_price(id):
+	test = topping.objects.filter(topping_id = id).values('topping_price')
+	for selected_toping in test:
+		return selected_toping.get('topping_price')
+
+#returns price of entire pizza 
+def get_pizza_price(id): 
+	list_of_toppings = pizza_toppings.objects.filter(pizza_id=id).values('pizza_toppings_id', 'pizza_id', 'topping_id') #getting all pizza_toppings for 1 pizza 
+	price = 0
+	for p_topping in list_of_toppings:
+		price += get_topping_price(p_topping.get('topping_id'))
+	return price 
+
+
+#returns true or false if toopping is vegetarian 
+def is_topping_vegetarian(id):
+	test = topping.objects.filter(topping_id = id).values('vegeterian')
+	for selected_topping in test:
+		if selected_topping.get('vegeterian') == True:
+			return True
+	return False
+
+#return if pizza is veg 
+def is_pizza_vegetarian(id):	
+	list_of_toppings = pizza_toppings.objects.filter(pizza_id=id).values('pizza_toppings_id', 'pizza_id', 'topping_id')
+	for p_topping in list_of_toppings:
+		if (not is_topping_vegetarian( p_topping.get('topping_id') )):  
+			return False 
+	return True 
+
+	
