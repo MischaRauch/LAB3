@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
                 ('order_id', models.AutoField(primary_key=True, serialize=False)),
                 ('total_price', models.FloatField(default=0)),
                 ('total_discount', models.FloatField(default=0)),
-                ('order_time', models.DateTimeField(verbose_name='orderedTime')),
+                ('order_time', models.DateTimeField(verbose_name='orderedTime', auto_now=True)),
                 ('customer_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='restaurant.customer')),
                 ('delivery_id', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='restaurant.delivery')),
             ],

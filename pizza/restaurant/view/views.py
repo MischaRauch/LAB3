@@ -13,8 +13,10 @@ def detail(request, pizza_id):
     selected_pizza = get_object_or_404(pizza, pk=pizza_id)
     print ('im here          ' )
     #test 
-    check_price = queries.get_pizza_price(1)
-    print (' PRICE PIZZA   ' , check_price)
+   #check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
+    new_order = queries.create_new_order_old_customer('1') 
+    print (' check address  ' , new_order)
+    queries.create_order_item(new_order, quantity= 2, pizza_id= 1)
     return render(request, 'restaurant/selectPizzaToppings.html', {'pizza': selected_pizza})
 
 def listpizzas(request):
@@ -24,6 +26,18 @@ def get_pizza_toppings(request):
     print("GOt HErE")
     #return render(request, 'restaurant/selectPizzaToppings.html')
     
+
+
+
+
+
+
+
+
+
+
+
+
 
 #def my_custom_sql():
 #    cursor = connection.cursor()
