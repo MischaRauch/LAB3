@@ -1,5 +1,6 @@
 from django.db import models #similar to SQLalchemy 
 from django.contrib.contenttypes.fields import GenericForeignKey
+from datetime import datetime
 
 # Create your models here.
 
@@ -27,9 +28,8 @@ class pizza_toppings(models.Model):
     pizza_toppings_id = models.AutoField(primary_key=True)
     pizza_id = models.ForeignKey(pizza, on_delete=models.CASCADE)    #FK 
     topping_id = models.ForeignKey(topping, on_delete=models.CASCADE)   #FK  
-    
     def __str__(self): 
-        return self.pizza_toppings_id
+        return str(self.pizza_toppings_id)
 
 class drink(models.Model):
     drink_id = models.AutoField(primary_key=True)    
@@ -54,7 +54,7 @@ class address(models.Model):
     house_number = models.IntegerField(default=0) 
     city = models.CharField(max_length=100)
     def __str__(self): 
-        return self.address_id
+        return str(self.address_id)
 
 class customer(models.Model):
     customer_id = models.AutoField(primary_key=True)    
@@ -65,54 +65,44 @@ class customer(models.Model):
     discount_available = models.BooleanField(default=False)
     address_id = models.ForeignKey(address, on_delete= models.CASCADE) #FK
     def __str__(self): 
-        return self.customer_id
+        return str(self.customer_id)
 
 class employee(models.Model):
     employee_id = models.AutoField(primary_key=True)    
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     area_code = models.CharField(max_length=100)
-    
     def __str__(self): 
-        return self.first_name
+        return str(self.employee_id)
 
 class delivery(models.Model):
-    Preparation = 'On preparation'
-    On_the_way = 'On the way'
-    Delivered = 'delivered'
-    status_choices = ( 
-        (Preparation, 'On preparation'),
-        (On_the_way, 'On the way'),
-        (Delivered, 'delivered')
-    )
     delivery_id = models.AutoField(primary_key=True)    
     employee_id = models.ForeignKey(employee, on_delete=models.CASCADE)    #FK 
-    status = models.CharField(max_length=50, choices = status_choices)
-    time_when_employee_left = models.DateTimeField('orderedTime')
-    
+    status = models.CharField(max_length=50)
+    time_when_employee_left = models.DateTimeField('orderedTime', default=datetime.now, blank=True )
     def __str__(self): 
-        return self.delivery_id
+        return str(self.delivery_id)
 
 class orders(models.Model):
     order_id = models.AutoField(primary_key=True)
     customer_id = models.ForeignKey(customer, on_delete=models.CASCADE)    #FK 
     total_price = models.FloatField(default=0) #calculated from drink, desert and pizza 
     total_discount= models.FloatField(default=0) # get boolean from costumer 
-    order_time = models.DateTimeField('orderedTime')
+    order_time = models.DateTimeField('orderedTime',  default=datetime.now, blank=True)
     delivery_id = models.ForeignKey(delivery, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.order_id
+        return str(self.order_id)
 
 class order_item(models.Model):
     order_item_id = models.AutoField(primary_key=True)    
     quantity = models.IntegerField(default=0) 
-    pizza_id = models.ForeignKey(pizza, on_delete=models.CASCADE)    #FK
-    drink_id = models.ForeignKey(drink, on_delete=models.CASCADE)    #FK 
-    desert_id = models.ForeignKey(desert, on_delete=models.CASCADE)    #FK
+    pizza_id = models.ForeignKey(pizza, on_delete=models.CASCADE, null= True,  blank=True, default= None)    #FK
+    drink_id = models.ForeignKey(drink, on_delete=models.CASCADE, null= True,  blank=True, default= None)    #FK 
+    desert_id = models.ForeignKey(desert, on_delete=models.CASCADE, null= True,  blank=True, default= None)    #FK
     order_id = models.ForeignKey(orders, on_delete=models.CASCADE)    #FK
     def __str__(self): 
-        return self.order_item_id
+        return str(self.order_item_id)
 
 
 
