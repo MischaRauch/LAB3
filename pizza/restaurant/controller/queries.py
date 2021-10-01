@@ -11,6 +11,7 @@ def get_pizzas(id):
 
 #return 1 pizza name 
 def get_pizza_name(id):
+	print("TEST ",pizza.objects.only('pizza_name').get(pk=id))
 	return pizza.objects.only('pizza_name').get(pk=id)
 
 def get_desert(id): 
