@@ -13,10 +13,12 @@ def detail(request, pizza_id):
     selected_pizza = get_object_or_404(pizza, pk=pizza_id)
     print ('im here          ' )
     #test 
-   #check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
-   # new_order = queries.create_new_order_old_customer('1') 
+    # queries.create_new_order_new_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
+    # new_order = queries.create_new_order_old_customer('1') 
     #print (' check address  ' , new_order)
-    queries.update_price_of_order(4)
+    # queries.update_price_of_order(4)
+
+    queries.update_delivery_status(6, "Delivered")
     return render(request, 'restaurant/selectPizzaToppings.html', {'pizza': selected_pizza})
 
 def listpizzas(request):
