@@ -1,5 +1,5 @@
 #return one pizza
-from django.db.models.lookups import PostgresOperatorLookup
+from os import name
 from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
 from restaurant.model.models import pizza,desert,drink, address, customer, order_item, employee , orders, order_item, delivery 
@@ -13,7 +13,6 @@ def get_pizza_by_id(id):
 
 #return 1 pizza name 
 def get_pizza_name(id):
-	print("TEST ",pizza.objects.only('pizza_name').get(pk=id))
 	return pizza.objects.only('pizza_name').get(pk=id)
 
 def get_desert_by_id(id): 
@@ -50,7 +49,7 @@ def get_drink_price(id):
 def get_topping_price(id):
 	test = topping.objects.filter(topping_id = id).values('topping_price')
 	for selected_toping in test:
-		return selected_toping.get('topping_price')
+		return selected_toping.get('topping_price')		
 
 #returns price of entire pizza 
 def get_pizza_price(id): 
@@ -59,6 +58,16 @@ def get_pizza_price(id):
 	for p_topping in list_of_toppings:
 		price += get_topping_price(p_topping.get('topping_id'))
 	return price 
+
+#returns list of toppings of a pizza
+def get_toppings(id):
+	list_of_toppings = pizza_toppings.objects.filter(pizza_id=id).values('pizza_toppings_id', 'pizza_id', 'topping_id') #getting all pizza_toppings for 1 pizza 
+	named_toppings = []
+	for pizza in list_of_toppings:
+		entry = list(topping.objects.filter(topping_id=pizza.get('topping_id')).values('topping_name'))
+		print(entry)
+		named_toppings.append(entry)
+	return list(named_toppings)
 
 
 def get_employee_based_on_user_postal_code(postal_code): 

@@ -4,7 +4,7 @@
 {% if selected_pizza %}
     <ul>
     {% for topping in selected_pizza %}
-        <li><a href="{% url 'detail' selected_pizza.topping_id %}">{{ selected_pizza }}</a></li>
+        <li><a href="{% url 'detail' selected_pizza.pizza_name %}">{{ selected_pizza }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

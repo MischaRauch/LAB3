@@ -1,32 +1,70 @@
+from datetime import date
+import json
+from sys import set_asyncgen_hooks
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from restaurant.controller import queries 
-from restaurant.model.models import pizza
+from restaurant.model.models import pizza, drink, desert
 from django.core import serializers
 
-def index(request):
+
+#For testing purposes
+def test(request):
+    print ('im here          ' )
+   # check_price = queries.get_pizza_price(1)
+   # print (' PRICE PIZZA   ' , check_price)
+   # check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
+   # new_order = queries.create_new_order_old_customer('1') 
+   # print (' check address  ' , new_order)
+   # queries.create_order_item(new_order, quantity= 2, pizza_id= 1)
+    return HttpResponse('Success')
+
+#returns all pizzas
+def get_all_pizzas(request):
     pizza_list = pizza.objects.order_by('-pizza_id')
     print("RAW DATA: ", pizza_list)
-    #context = {'pizza_list': pizza_list}
+    #print(model_to_dict(pizza_list))
     data = serializers.serialize('json', pizza_list, fields=('pizza_id','pizza_name'))
     return JsonResponse(data, safe= False)
-    #return render(request, 'restaurant/index.html', context)
     
+#returns one pizza with ingridients and price
+def get_one_pizza(request, pizza_id): 
+    toppings = queries.get_toppings(pizza_id)
+    price = queries.get_pizza_price(pizza_id)
+    toppings.append(price)    
+    toppings = json.dumps(toppings)
+    return JsonResponse(str(toppings), safe= False)
 
-def detail(request, pizza_id): 
-    selected_pizza = get_object_or_404(pizza, pk=pizza_id)
-    print ('im here          ' )
-    #test 
-    #check_price = queries.get_pizza_price(1)
-    queries.get_pizza_name(pizza_id)
-    #print (' PRICE PIZZA   ' , check_price)
-   #check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
-    new_order = queries.create_new_order_old_customer('1') 
-    print (' check address  ' , new_order)
-    queries.create_order_item(new_order, quantity= 2, pizza_id= 1)
-    return render(request, 'restaurant/selectPizzaToppings.html', {'pizza': selected_pizza})
+#returns true or false if pizza is vegeterian
+def get_vegetarian(request, pizza_id):
+    veggi = queries.is_pizza_vegetarian(pizza_id)
+    print('VEGGI ',veggi)
+    data = json.dumps(veggi)
+    return JsonResponse(data, safe=False)
 
+def get_drinks(request):
+    drink_list = drink.objects.order_by('-drink_id')
+    data = serializers.serialize('json', drink_list, fields=('drink_id','drink_name'))
+    return JsonResponse(data, safe= False)
+
+def get_drink_price(request, drink_id):
+    price = queries.get_drink_price(drink_id)
+    data = json.dumps(price)
+    return JsonResponse(data, safe=False)
+
+def get_deserts(request):
+    drink_list = desert.objects.order_by('-desert_id')
+    data = serializers.serialize('json', drink_list, fields=('desert_id','desert_name'))
+    return JsonResponse(data, safe= False)
+
+def get_desert_price(request, desert_id):
+    price = queries.get_desert_price(desert_id)
+    data = json.dumps(price)
+    return JsonResponse(data, safe=False)
+
+
+#creates a customer
 @csrf_exempt
 def create_Customer(request):
     if (request.method == 'POST'):
@@ -35,17 +73,11 @@ def create_Customer(request):
         queries.create_address_customer(request.POST['postal_code'],request.POST['country'],request.POST['street'],request.POST['house_number'],request.POST['city'],request.POST['first_name'], request.POST['last_name'],request.POST['email'],request.POST['phone'])
     else:
         print('NO POST')
+    
     #queries.create_address_customer(request)
     return HttpResponse('Success')
 
 
-def listpizzas(request):
-    return render(request, 'restaurant/gallery.html')
-
-def get_pizza_toppings(request):
-    print("GOt HErE")
-    #return render(request, 'restaurant/selectPizzaToppings.html')
-    
 
 
 
