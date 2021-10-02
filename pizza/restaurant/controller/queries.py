@@ -107,6 +107,7 @@ def create_address_customer(postal_code, country, street, house_number, city, fi
 
 def create_new_order_new_customer(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
 	#create an address and customer 
+	# TODO
 	create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	
 	#FIND OUT CUSTOMER_ID to pass to new method 
@@ -165,6 +166,35 @@ def create_only_customer(first_name, last_name, email, phone, address_id):
     #create new customer based on address information
     customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
 
+def update_price_of_order(order_id):
+	"""
+	Get all order items. Get price of all items
+	Update Order.Total_price
+	"""
+	vat = 0.09
+	margin_of_profit = 0.4
+	total_order_price = 0
+	all_pizza_items =order_item.objects.filter(order_id=order_id, pizza_id__isnull=False).values('pizza_id')
+	all_drink_items =order_item.objects.filter(order_id=order_id, drink_id__isnull=False).values('drink_id')
+	all_desert_items =order_item.objects.filter(order_id=order_id, desert_id__isnull=False).values('desert_id')
+
+	for pizza_item in all_pizza_items:
+		pizza = get_pizza_by_id(pizza_item.get('pizza_id'))
+		total_order_price += get_pizza_price(pizza)
+	
+	for drink_item in all_drink_items:
+		drink = get_drink_by_id(drink_item.get('drink_id'))
+		total_order_price += get_drink_price(drink)
+
+	for desert_item in all_desert_items:
+		desert = get_desert_by_id(desert_item.get('desert_id'))
+		total_order_price +=get_desert_price(desert)
+
+	total_order_price += (total_order_price * vat) + ( total_order_price * margin_of_profit)
+
+	orders.objects.filter(order_id=order_id).update(total_price=total_order_price)
+
+	return total_order_price
 
 
 
@@ -179,3 +209,16 @@ def get_postal_code(id):
 		return selected_customer.get('postal_code')
 	
 
+"""
+Update price of order
+by accessing order item
+
+Create a new order for a new customer
+Only for new customers
+
+
+Change delivery status after 5 mins, delivered after 15
+
+
+Method delete order (only possible in first 5 mins)
+"""

@@ -14,9 +14,9 @@ def detail(request, pizza_id):
     print ('im here          ' )
     #test 
    #check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
-    new_order = queries.create_new_order_old_customer('1') 
-    print (' check address  ' , new_order)
-    queries.create_order_item(new_order, quantity= 2, pizza_id= 1)
+   # new_order = queries.create_new_order_old_customer('1') 
+    #print (' check address  ' , new_order)
+    queries.update_price_of_order(4)
     return render(request, 'restaurant/selectPizzaToppings.html', {'pizza': selected_pizza})
 
 def listpizzas(request):
