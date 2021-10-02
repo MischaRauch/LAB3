@@ -13,22 +13,33 @@ main_list = {
     "type": "list",
     "name": "choice",
     "message": "What do you want to do?",
-    "choices": ["Display Menu Pizza", "Display Menu Drinks", "Display Menu Deserts", "Create a user", "Login", "Get a user", "Quit"],
+    "choices": ["Display Menu Pizza", "Display Menu Drinks", "Display Menu Deserts", "Are you new?", "Login with customer_id", "Quit"],
+}
+sub_list = {
+    "type": "list",
+    "name": "choice",
+    "message": "What do you want to do?",
+    "choices": ["Add Pizza", "Add Drink", "Add Desert", "Quit"],
 }
 
 
-login_questions = [
-    {"type": "input", "message": "Enter your username", "name": "username"},
-    {"type": "password", "message": "Enter your password", "name": "password"},
+login_id = [
+    {"type": "input", "message": "Enter your customer_id", "name": "customer_id"},
 ]
 
-create_questions = login_questions + [
-    {"type": "input", "message": "Enter your e-mail address", "name": "email"},
+create_pizzaID_input =  [
+    {"type": "input", "message": "Enter the pizza ID", "name": "pizza_id"},
+    {"type": "input", "message": "Enter the quantity", "name": "quantity"},
+]
+create_drinkID_input =  [
+    {"type": "input", "message": "Enter the drink ID", "name": "drink_id"},
+    {"type": "input", "message": "Enter the quantity", "name": "quantity"},
+]
+create_desertID_input =  [
+    {"type": "input", "message": "Enter the desert ID", "name": "desert_id"},
+    {"type": "input", "message": "Enter the quantity", "name": "quantity"},
 ]
 
-user_id_questions = [
-    {"type": "input", "message": "Enter the id", "name": "user_id"},
-]
 
 #postal_code, country, street, house_number, city, first_name, last_name, email, phone
 create_user_questions = [
@@ -44,16 +55,29 @@ create_user_questions = [
 ]
 
 
-def login(username, password):
-    response = requests.post(BASE_URL + "/login", data={"username": username, "password": password})
-    print(response.json())
+def login(customer_id):
+    response = requests.post(BASE_URL + "/login", data={"customer_id": customer_id})
+    sub_selection()
+    #print(response.json())
 
 
 def create_user(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
     response = requests.post(BASE_URL + "/createCustomer", data={"postal_code": postal_code, "country": country, "street": street, "house_number": house_number, "city": city, "first_name": first_name, "last_name": last_name, "email": email, "phone": phone})
+    sub_selection()
     #answer_dict = json.loads(response.json())
     #print(answer_dict)
 
+def add_pizza(pizza_id, quantity):
+    response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": pizza_id, "quantity": quantity, "drink_id": 9999, "desert_id": 9999})
+    sub_selection()
+
+def add_drink(drink_id, quantity):
+    response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": 9999, "quantity": quantity, "drink_id": drink_id, "desert_id": 9999})
+    sub_selection()
+
+def add_desert(desert_id, quantity):
+    response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": 9999, "quantity": quantity, "drink_id": 9999, "desert_id": desert_id})
+    sub_selection()
 
 def get_user(user_id):
     response = requests.get(BASE_URL + "/user/" + user_id)
@@ -105,19 +129,32 @@ def get_desserts():
         print('\t',desert_name, price)
         index = index +1 
 
+def sub_selection():
+    while True:
+        answers = prompt(sub_list)
+        answer = answers["choice"]
+        if answer == "Add Pizza":
+            get_pizzaID = prompt(create_pizzaID_input)
+            add_pizza(**get_pizzaID)
+        if answer == "Add Drink":
+            get_drinkID = prompt(create_drinkID_input)
+            add_drink(**get_drinkID)
+        if answer == "Add Desert":
+            get_desertID = prompt(create_desertID_input)
+            add_desert(**get_desertID)    
+        if answer == "Quit":
+            break
+
 if __name__ == "__main__":
     while True:
         answers = prompt(main_list)
         answer = answers["choice"]
-        if answer == "Create a user":
+        if answer == "Are you new?":
             create_answers = prompt(create_user_questions)
             create_user(**create_answers)
-        if answer == "Login":
-            login_answers = prompt(login_questions)
+        if answer == "Login with customer_id":
+            login_answers = prompt(login_id)
             login(**login_answers)
-        if answer == "Get a user":
-            get_user_answers = prompt(user_id_questions)
-            get_user(**get_user_answers)
         if answer == "Quit":
             break
         if answer == "Display Menu Pizza":

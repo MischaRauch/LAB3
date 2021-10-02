@@ -1,5 +1,6 @@
 from datetime import date
 import json
+import re
 from sys import set_asyncgen_hooks
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -66,17 +67,54 @@ def get_desert_price(request, desert_id):
 
 #creates a customer
 @csrf_exempt
-def create_Customer(request):
+def create_customer(request):
     if (request.method == 'POST'):
         print("DATA" ,request.POST['first_name'])
         #postal_code, country, street, house_number, city, first_name, last_name, email, phone
-        queries.create_address_customer(request.POST['postal_code'],request.POST['country'],request.POST['street'],request.POST['house_number'],request.POST['city'],request.POST['first_name'], request.POST['last_name'],request.POST['email'],request.POST['phone'])
+        global new_order
+        new_order = queries.create_new_order_new_customer(request.POST['postal_code'],request.POST['country'],request.POST['street'],request.POST['house_number'],request.POST['city'],request.POST['first_name'], request.POST['last_name'],request.POST['email'],request.POST['phone'])
+        print("NEW ORDER ",new_order)
     else:
         print('NO POST')
+   # request.session['order'] = new_order
+   # if new_order is None:
+   #     order = new_order
+   # print("ORDER ", request.sesssion.get('order'))
     
     #queries.create_address_customer(request)
     return HttpResponse('Success')
 
+@csrf_exempt
+def get_customer(request):
+    if (request.method == 'POST'):
+        global new_order
+        new_order = queries.create_new_order_old_customer(request.POST['customer_id'])
+    else:
+        print('NO POST')
+    return HttpResponse('Success')
+
+@csrf_exempt
+def create_order_item(request):
+    print('CUSTOMER ', new_order)
+    if (request.method == 'POST'):     
+        print('GOT HERE')
+        print(type(request.POST['drink_id']))
+        print(request.POST['desert_id'])
+        print(((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999'))
+        if (((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
+            print('Pizza_id', request.POST['pizza_id'])
+            queries.create_order_item(new_order, request.POST['quantity'], request.POST['pizza_id'])
+        if (((request.POST['pizza_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
+            print('Drink_ID')
+            queries.create_order_item(new_order, request.POST['quantity'], None, request.POST['drink_id'])
+        if (((request.POST['pizza_id']) == '9999') and ((request.POST['drink_id']) == '9999') ):
+            print('Dessert_Id')
+            queries.create_order_item(new_order, request.POST['quantity'], None, None,  request.POST['desert_id'])
+        
+    else:
+        print('NO POST')
+    
+    return HttpResponse('Success')
 
 
 

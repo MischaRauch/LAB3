@@ -123,16 +123,13 @@ def create_new_order_new_customer(postal_code, country, street, house_number, ci
 	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	
 	#FIND OUT CUSTOMER_ID to pass to new method
-	print(new_customer.customer_id)
-	create_new_order_old_customer(new_customer.customer_id)
+	return create_new_order_old_customer(new_customer.customer_id)
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
 	customer_postal_code= get_postal_code(customer_id)
-	print ('line 107' , customer_postal_code)
 	#find out employee 
 	employee_object = get_employee_based_on_user_postal_code(customer_postal_code)
-	print ('line 110' , employee_object)
 	#create delivery first 
 	new_delivery = create_delivery(employee_object)
 	
@@ -173,9 +170,6 @@ def update_delivery_status(delivery_id, new_status):
 	
 	return number_or_rows_changed
 
-def create_new_order_item(pizza_id, drink_id, desert_id, quantity, order_id):
-	new_order_item = order_item.obejcts.create(quantity = quantity, pizza_id= pizza_id, drink_id= drink_id, desert_id = desert_id, irder_id=order_id )
-	return new_order_item 
 
 
 def create_only_address(postal_code, country, street, house_number, city):
