@@ -113,14 +113,18 @@ def create_address_customer(postal_code, country, street, house_number, city, fi
     #first create address
     new_address = create_only_address(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city)
     #after address creation we can create a customer
-    create_only_customer(first_name= first_name, last_name= last_name, email= email, phone= phone, address_id= new_address)
+    new_customer = create_only_customer(first_name= first_name, last_name= last_name, email= email, phone= phone, address_id= new_address)
+    return new_customer
+	
 
 def create_new_order_new_customer(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
 	#create an address and customer 
-	create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
+	# TODO
+	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	
-	#FIND OUT CUSTOMER_ID to pass to new method 
-	create_new_order_old_customer()
+	#FIND OUT CUSTOMER_ID to pass to new method
+	print(new_customer.customer_id)
+	create_new_order_old_customer(new_customer.customer_id)
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
@@ -159,6 +163,16 @@ def create_delivery (employee_object):
 	new_delivery = delivery.objects.create(employee_id= employee_object, status= 'Preparation')
 	return new_delivery
 
+def update_delivery_status(delivery_id, new_status):
+	"""
+	Updates delivery to new status.
+
+	Returns number of rows changed. Will be 0 if id is not matched
+	"""
+	number_or_rows_changed = delivery.objects.filter(delivery_id=delivery_id).update(status=new_status)
+	
+	return number_or_rows_changed
+
 def create_new_order_item(pizza_id, drink_id, desert_id, quantity, order_id):
 	new_order_item = order_item.obejcts.create(quantity = quantity, pizza_id= pizza_id, drink_id= drink_id, desert_id = desert_id, irder_id=order_id )
 	return new_order_item 
@@ -173,8 +187,40 @@ def create_only_address(postal_code, country, street, house_number, city):
 
 def create_only_customer(first_name, last_name, email, phone, address_id):
     #create new customer based on address information
-    customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
+	new_customer = customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
+	return new_customer[0]
 
+def update_price_of_order(order_id):
+	"""
+	Get all order items. Get price of all items
+	Update Order.Total_price
+
+	Returns price of order
+	"""
+	vat = 0.09
+	margin_of_profit = 0.4
+	total_order_price = 0
+	all_pizza_items =order_item.objects.filter(order_id=order_id, pizza_id__isnull=False).values('pizza_id')
+	all_drink_items =order_item.objects.filter(order_id=order_id, drink_id__isnull=False).values('drink_id')
+	all_desert_items =order_item.objects.filter(order_id=order_id, desert_id__isnull=False).values('desert_id')
+
+	for pizza_item in all_pizza_items:
+		pizza = get_pizza_by_id(pizza_item.get('pizza_id'))
+		total_order_price += get_pizza_price(pizza)
+	
+	for drink_item in all_drink_items:
+		drink = get_drink_by_id(drink_item.get('drink_id'))
+		total_order_price += get_drink_price(drink)
+
+	for desert_item in all_desert_items:
+		desert = get_desert_by_id(desert_item.get('desert_id'))
+		total_order_price +=get_desert_price(desert)
+
+	total_order_price += (total_order_price * vat) + ( total_order_price * margin_of_profit)
+
+	orders.objects.filter(order_id=order_id).update(total_price=total_order_price)
+
+	return total_order_price
 
 
 
@@ -189,3 +235,10 @@ def get_postal_code(id):
 		return selected_customer.get('postal_code')
 	
 
+"""
+
+Change delivery status after 5 mins, delivered after 15
+
+
+Method delete order (only possible in first 5 mins)
+"""
