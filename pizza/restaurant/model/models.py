@@ -7,7 +7,6 @@ from datetime import datetime
 class pizza(models.Model):
     pizza_id = models.AutoField(primary_key=True)    
     pizza_name = models.CharField(max_length=100) 
-
     def __str__(self): #function: looking up pizzas         
         return self.pizza_name        
 
@@ -72,13 +71,14 @@ class employee(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     area_code = models.CharField(max_length=100)
+    status = models.CharField(max_length=50) #need to add to schema . Options = On delivery, Free.
     def __str__(self): 
         return str(self.employee_id)
 
 class delivery(models.Model):
     delivery_id = models.AutoField(primary_key=True)    
     employee_id = models.ForeignKey(employee, on_delete=models.CASCADE)    #FK 
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50) #Preparation, On the way, Received by customer. 
     time_when_employee_left = models.DateTimeField('orderedTime', default=datetime.now, blank=True )
     def __str__(self): 
         return str(self.delivery_id)

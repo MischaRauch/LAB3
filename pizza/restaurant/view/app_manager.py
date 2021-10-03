@@ -3,6 +3,7 @@ import re
 from PyInquirer import prompt
 import requests
 import json
+import time 
 from pprint import pprint
 
 from requests.api import request
@@ -94,9 +95,9 @@ def get_menu():
         veggi_request = requests.get(BASE_URL + "/veggi/" + str(index+1))
         veggi = json.loads(veggi_request.json())
         if (veggi):
-            pprint('This Pizza is Vegan')
+            pprint('This Pizza is Vegeterian.')
         else:
-            pprint('This pizza is not Vegan')
+            pprint('This pizza is not Vegeterian.')
         sub_response = requests.get(BASE_URL + "/"+ str(index+1))
         toppings = json.loads(sub_response.json())
         pprint(toppings)
@@ -146,6 +147,7 @@ def sub_selection():
             break
 
 if __name__ == "__main__":
+    
     while True:
         answers = prompt(main_list)
         answer = answers["choice"]
@@ -163,3 +165,29 @@ if __name__ == "__main__":
             getsomething = get_drinks()
         if answer == "Display Menu Deserts":
             getsomething = get_desserts()
+
+def check_time():
+    current_time = time.gmtime()[4]
+    while (True):
+        time.sleep(60)
+        #get all deliveries and for each, check if their status needs updating 
+        response = requests.get(BASE_URL + "/orders")
+        orders_dict = json.loads(response.json())
+        index = 0
+        while index < len(orders_dict):
+            if (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*5):
+                #and status == Preparation then
+                # change status to -> "on the way" and set employee -> "On delivery"
+            elif (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*15):
+                #and status == On delivery 
+                #change status to -> "Received" 
+            elif (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*15):
+                
+            
+
+
+
+def thread_function():
+    logging.info("Thread %s: starting", name)
+    time.sleep(2)
+    logging.info("Thread %s: finishing", name)

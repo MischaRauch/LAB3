@@ -6,7 +6,7 @@ from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.csrf import csrf_exempt
 from restaurant.controller import queries 
-from restaurant.model.models import pizza, drink, desert
+from restaurant.model.models import pizza, drink, desert, orders 
 from django.core import serializers
 
 
@@ -64,6 +64,10 @@ def get_desert_price(request, desert_id):
     data = json.dumps(price)
     return JsonResponse(data, safe=False)
 
+def get_orders(request):
+    order_list = orders.object.order_by('-order_time')
+    data = serializers.serialize('json', order_list, fields=('order_id', 'order_time'))
+    return JsonResponse(data, safe=False) 
 
 #creates a customer
 @csrf_exempt

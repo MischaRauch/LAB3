@@ -33,23 +33,36 @@ def get_customer_by_id(id):
 
 
 
-#returns desert price 
+#returns desert price including VAT and marging of profit   
 def get_desert_price(id):
+	vat = 0.09
+	margin_of_profit = 0.4
+	price = 0
 	test = desert.objects.filter(desert_id = id).values('desert_price')
 	for selected_desert in test:
-		return selected_desert.get('desert_price')
+		price = selected_desert.get('desert_price')
+	return price + price*vat + price*margin_of_profit
 
-#returns drink price 
+#returns drink price including VAT and marging of profit   
 def get_drink_price(id):
+	vat = 0.09
+	margin_of_profit = 0.4
+	price = 0
 	test = drink.objects.filter(drink_id = id).values('drink_price')
 	for selected_drink in test:
-		return selected_drink.get('drink_price')
+		price = selected_drink.get('drink_price')
+	return price + price*vat + price*margin_of_profit
 
-#returns topping price 
+#returns topping price including VAT and marging of profit   
 def get_topping_price(id):
+
+	vat = 0.09
+	margin_of_profit = 0.4
+	price = 0
 	test = topping.objects.filter(topping_id = id).values('topping_price')
 	for selected_toping in test:
-		return selected_toping.get('topping_price')		
+		price=  selected_toping.get('topping_price')		
+	return price + price*vat + price*margin_of_profit
 
 #returns price of entire pizza 
 def get_pizza_price(id): 
@@ -123,13 +136,16 @@ def create_new_order_new_customer(postal_code, country, street, house_number, ci
 	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	
 	#FIND OUT CUSTOMER_ID to pass to new method
-	return create_new_order_old_customer(new_customer.customer_id)
+	print(new_customer.customer_id)
+	create_new_order_old_customer(new_customer.customer_id)
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
 	customer_postal_code= get_postal_code(customer_id)
+	print ('line 107' , customer_postal_code)
 	#find out employee 
 	employee_object = get_employee_based_on_user_postal_code(customer_postal_code)
+	print ('line 110' , employee_object)
 	#create delivery first 
 	new_delivery = create_delivery(employee_object)
 	
@@ -170,6 +186,9 @@ def update_delivery_status(delivery_id, new_status):
 	
 	return number_or_rows_changed
 
+def create_new_order_item(pizza_id, drink_id, desert_id, quantity, order_id):
+	new_order_item = order_item.obejcts.create(quantity = quantity, pizza_id= pizza_id, drink_id= drink_id, desert_id = desert_id, irder_id=order_id )
+	return new_order_item 
 
 
 def create_only_address(postal_code, country, street, house_number, city):
@@ -184,6 +203,8 @@ def create_only_customer(first_name, last_name, email, phone, address_id):
 	new_customer = customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
 	return new_customer[0]
 
+
+#TODO add discount 
 def update_price_of_order(order_id):
 	"""
 	Get all order items. Get price of all items
@@ -191,8 +212,6 @@ def update_price_of_order(order_id):
 
 	Returns price of order
 	"""
-	vat = 0.09
-	margin_of_profit = 0.4
 	total_order_price = 0
 	all_pizza_items =order_item.objects.filter(order_id=order_id, pizza_id__isnull=False).values('pizza_id')
 	all_drink_items =order_item.objects.filter(order_id=order_id, drink_id__isnull=False).values('drink_id')
@@ -209,8 +228,6 @@ def update_price_of_order(order_id):
 	for desert_item in all_desert_items:
 		desert = get_desert_by_id(desert_item.get('desert_id'))
 		total_order_price +=get_desert_price(desert)
-
-	total_order_price += (total_order_price * vat) + ( total_order_price * margin_of_profit)
 
 	orders.objects.filter(order_id=order_id).update(total_price=total_order_price)
 
@@ -229,10 +246,21 @@ def get_postal_code(id):
 		return selected_customer.get('postal_code')
 	
 
+#TODO 
 """
-
-Change delivery status after 5 mins, delivered after 15
-
-
 Method delete order (only possible in first 5 mins)
 """
+
+"""
+order min 1 pizza 
+"""
+"""
+change status employee , call the method from create_order to set it unavailable from 30 min. Also in that method check if employee is available before assigning it to deliver 
+"""
+
+
+
+
+
+
+
