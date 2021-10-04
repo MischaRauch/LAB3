@@ -71,7 +71,7 @@ class employee(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     area_code = models.CharField(max_length=100)
-    status = models.CharField(max_length=50) #need to add to schema . Options = On delivery, Free.
+    status_employee = models.CharField(max_length=50, default = 'Free') #need to add to schema . Options = On delivery, Free. #TODO set default to be free 
     def __str__(self): 
         return str(self.employee_id)
 

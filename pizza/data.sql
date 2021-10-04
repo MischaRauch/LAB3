@@ -38,12 +38,12 @@ INSERT INTO restaurant_desert VALUES
 ;
 INSERT INTO restaurant_employee VALUES 
 #ASSUMING MAASTRICHT are 56-62 
-    (1, 'Mischa', 'Rauch', '56'),
-    (2, 'Lou', 'Rauch', '57'),
-    (3, 'Meli', 'Carioni', '59'),
-    (4, 'Marie', 'bersia', '60'),
-    (5, 'Adrien', 'bersia', '61'),
-    (6, 'Kai', 'bersia', '62')
+    (1, 'Mischa', 'Rauch', '56', 'Free'),
+    (2, 'Lou', 'Rauch', '57', 'Free'),
+    (3, 'Meli', 'Carioni', '59', 'Free'),
+    (4, 'Marie', 'bersia', '60', 'Free'),
+    (5, 'Adrien', 'bersia', '61', 'Free'),
+    (6, 'Kai', 'bersia', '62', 'Free')
 ;
 
 INSERT INTO restaurant_address VALUES 

@@ -13,7 +13,7 @@ from django.core import serializers
 #For testing purposes
 def test(request):
     print ('im here          ' )
-    queries.update_delivery_status_using_order_id(2, 'Changed')
+    queries.update_employee_status_using_order_id(1, 'Changed')
    # check_price = queries.get_pizza_price(1)
    # print (' PRICE PIZZA   ' , check_price)
    # check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
@@ -106,8 +106,8 @@ def get_customer(request):
     return HttpResponse('Success')
 
 @csrf_exempt
-def create_order_item(request):
-    print('CUSTOMER ', new_order)
+def create_order_item(request): #TODO SOMETHING IS WRONG WITH THISSSSSS 
+   # print('CUSTOMER ', new_order) 
     if (request.method == 'POST'):     
         print('GOT HERE')
         print(type(request.POST['drink_id']))

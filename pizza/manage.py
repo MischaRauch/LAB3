@@ -3,8 +3,13 @@
 import os
 import sys
 
+BASE_URL = "http://localhost:8000"
+
+
+
 
 def main():
+ 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pizza.settings')
     try:
         from django.core.management import execute_from_command_line

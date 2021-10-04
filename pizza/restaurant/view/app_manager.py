@@ -148,12 +148,9 @@ def sub_selection():
         if answer == "Quit":
             break
 
-
 def check_time():
-    while True:
-        update_order_status_of_order('Preparation', 'On the way', 60*5)
-        update_order_status_of_order('On the way', 'Received by customer', 60*15)
-        time.sleep(20)
+    update_order_status_of_order('Preparation', 'On the way', 60*5)
+    update_order_status_of_order('On the way', 'Received by customer', 60*15)
 
 #TODO set employee status !! 
 def update_order_status_of_order(old_status, new_status, time_diff):
@@ -169,26 +166,28 @@ def update_order_status_of_order(old_status, new_status, time_diff):
             print(post_res)
 
 
+
 if __name__ == "__main__":
-
-    x = threading.Thread(target=check_time)
-    x.daemon = True
-    x.start()
-
     while True:
         answers = prompt(main_list)
         answer = answers["choice"]
         if answer == "Are you new?":
+            check_time()
             create_answers = prompt(create_user_questions)
             create_user(**create_answers)
         if answer == "Login with customer_id":
+            check_time()
             login_answers = prompt(login_id)
             login(**login_answers)
         if answer == "Quit":
+            check_time()
             break
         if answer == "Display Menu Pizza":
+            check_time()
             getsomething = get_menu()
         if answer == "Display Menu Drinks":
+            check_time()
             getsomething = get_drinks()
         if answer == "Display Menu Deserts":
+            check_time()
             getsomething = get_desserts()

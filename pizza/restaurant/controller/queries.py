@@ -31,8 +31,6 @@ def get_customer_by_id(id):
 	return customer.objects.filter(customer_id = id)[0]
 	
 
-
-
 #returns desert price including VAT and marging of profit   
 def get_desert_price(id):
 	vat = 0.09
@@ -88,7 +86,16 @@ def get_employee_based_on_user_postal_code(postal_code):
 	employ = employee.objects.filter(area_code = postal_code[:2]) #gettin emplyee with area code == to the first 2 digits from postal code. 0 because is an array 
 	return employ[0] 
 
-
+#returns customer postal code 
+def get_postal_code(id):
+	test = customer.objects.filter(customer_id = id).values('address_id')
+	for selected_customer in test:
+		address_idd= selected_customer.get('address_id')	
+	test = address.objects.filter(address_id = address_idd).values('postal_code')
+	for selected_customer in test:
+		print( selected_customer.get('postal_code'))
+		return selected_customer.get('postal_code')
+	
 
 def get_delivery_id(delivery_object):
 	test = delivery.objects.filter().values('delivery_id')
@@ -184,21 +191,9 @@ def create_delivery (employee_object):
 	new_delivery = delivery.objects.create(employee_id= employee_object, status= 'Preparation')
 	return new_delivery
 
-def update_delivery_status_using_order_id(order_id, new_status):
-	"""
-	Updates delivery to new status. Using the order ID.
-
-	Returns number of rows changed. Will be 0 if id is not matched
-	"""
-	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
-	number_or_rows_changed = delivery.objects.filter(delivery_id=delivery_obj['delivery_id']).update(status=new_status)
-	
-	return number_or_rows_changed
-
 def create_new_order_item(pizza_id, drink_id, desert_id, quantity, order_id):
 	new_order_item = order_item.obejcts.create(quantity = quantity, pizza_id= pizza_id, drink_id= drink_id, desert_id = desert_id, irder_id=order_id )
 	return new_order_item 
-
 
 def create_only_address(postal_code, country, street, house_number, city):
     #create new address
@@ -212,6 +207,17 @@ def create_only_customer(first_name, last_name, email, phone, address_id):
 	new_customer = customer.objects.get_or_create(first_name= first_name, last_name= last_name, email_address= email, phone_number= phone, address_id = address_id)
 	return new_customer[0]
 
+
+def update_delivery_status_using_order_id(order_id, new_status):
+	"""
+	Updates delivery to new status. Using the order ID.
+
+	Returns number of rows changed. Will be 0 if id is not matched
+	"""
+	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
+	number_or_rows_changed = delivery.objects.filter(delivery_id=delivery_obj['delivery_id']).update(status=new_status)
+	
+	return number_or_rows_changed
 
 #TODO add discount 
 def update_price_of_order(order_id):
@@ -242,18 +248,16 @@ def update_price_of_order(order_id):
 
 	return total_order_price
 
-
-
-#returns customer postal code 
-def get_postal_code(id):
-	test = customer.objects.filter(customer_id = id).values('address_id')
-	for selected_customer in test:
-		address_idd= selected_customer.get('address_id')	
-	test = address.objects.filter(address_id = address_idd).values('postal_code')
-	for selected_customer in test:
-		print( selected_customer.get('postal_code'))
-		return selected_customer.get('postal_code')
+def update_employee_status_using_order_id(order_id, new_status): 
+	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
+	delivery_obj2= delivery.objects.filter(delivery_id=delivery_obj['delivery_id'] ).values('employee_id')[0]
+	employee_object = employee.objects.filter(employee_id = delivery_obj2['employee_id']).values('employee_id')[0]
 	
+	number_or_rows_changed = employee.objects.filter(employee_id=employee_object['employee_id']).update(status=new_status)
+	
+	return number_or_rows_changed
+
+
 
 #TODO 
 """
