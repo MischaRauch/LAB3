@@ -5,6 +5,8 @@ import requests
 import json
 import time 
 from pprint import pprint
+import threading
+from datetime import datetime
 
 from requests.api import request
 
@@ -146,8 +148,33 @@ def sub_selection():
         if answer == "Quit":
             break
 
+
+def check_time():
+    while True:
+        update_order_status_of_order('Preparation', 'On the way', 60*5)
+        update_order_status_of_order('On the way', 'Received by customer', 60*15)
+        time.sleep(20)
+
+#TODO set employee status !! 
+def update_order_status_of_order(old_status, new_status, time_diff):
+    current_time = datetime.now()
+    response = requests.get(f'{BASE_URL}/orders?status={old_status}')
+    orders_dict = json.loads(response.json())
+    print(orders_dict)
+    for ord in orders_dict:
+        print(ord)
+        ord_time = datetime.strptime(ord.get('fields').get('order_time'), "%Y-%m-%dT%H:%M:%S.%fZ")
+        if ( current_time -  ord_time ).total_seconds()  > time_diff:
+            post_res = requests.post(f'{BASE_URL}/orders/{ord.get("pk")}/', data={'new_status': new_status})
+            print(post_res)
+
+
 if __name__ == "__main__":
-    
+
+    x = threading.Thread(target=check_time)
+    x.daemon = True
+    x.start()
+
     while True:
         answers = prompt(main_list)
         answer = answers["choice"]
@@ -165,29 +192,3 @@ if __name__ == "__main__":
             getsomething = get_drinks()
         if answer == "Display Menu Deserts":
             getsomething = get_desserts()
-
-def check_time():
-    current_time = time.gmtime()[4]
-    while (True):
-        time.sleep(60)
-        #get all deliveries and for each, check if their status needs updating 
-        response = requests.get(BASE_URL + "/orders")
-        orders_dict = json.loads(response.json())
-        index = 0
-        while index < len(orders_dict):
-            if (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*5):
-                #and status == Preparation then
-                # change status to -> "on the way" and set employee -> "On delivery"
-            elif (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*15):
-                #and status == On delivery 
-                #change status to -> "Received" 
-            elif (orders_dict[index].get('fields').get('order_time').time() - current_time)  > (60*15):
-                
-            
-
-
-
-def thread_function():
-    logging.info("Thread %s: starting", name)
-    time.sleep(2)
-    logging.info("Thread %s: finishing", name)

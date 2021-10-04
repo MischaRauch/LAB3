@@ -172,17 +172,26 @@ def create_order_item(order_object, quantity,  pizza_id= None, drink_id= None, d
 		desert_object = get_desert_by_id(desert_id)
 		order_item.objects.create(desert_id = desert_object, quantity= quantity, order_id = order_object)
 
+def get_orders_by_delivery_status(status):
+	order_results = []
+	deliveries = delivery.objects.filter(status=status)
+	for deliv in deliveries:
+		order = orders.objects.filter(delivery_id=deliv)[0]
+		order_results.append(order)
+	return order_results
+
 def create_delivery (employee_object): 
 	new_delivery = delivery.objects.create(employee_id= employee_object, status= 'Preparation')
 	return new_delivery
 
-def update_delivery_status(delivery_id, new_status):
+def update_delivery_status_using_order_id(order_id, new_status):
 	"""
-	Updates delivery to new status.
+	Updates delivery to new status. Using the order ID.
 
 	Returns number of rows changed. Will be 0 if id is not matched
 	"""
-	number_or_rows_changed = delivery.objects.filter(delivery_id=delivery_id).update(status=new_status)
+	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
+	number_or_rows_changed = delivery.objects.filter(delivery_id=delivery_obj['delivery_id']).update(status=new_status)
 	
 	return number_or_rows_changed
 

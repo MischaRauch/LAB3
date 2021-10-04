@@ -13,6 +13,7 @@ from django.core import serializers
 #For testing purposes
 def test(request):
     print ('im here          ' )
+    queries.update_delivery_status_using_order_id(2, 'Changed')
    # check_price = queries.get_pizza_price(1)
    # print (' PRICE PIZZA   ' , check_price)
    # check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
@@ -65,9 +66,16 @@ def get_desert_price(request, desert_id):
     return JsonResponse(data, safe=False)
 
 def get_orders(request):
-    order_list = orders.object.order_by('-order_time')
+    status = request.GET.get('status')
+    order_list = queries.get_orders_by_delivery_status(status)
     data = serializers.serialize('json', order_list, fields=('order_id', 'order_time'))
-    return JsonResponse(data, safe=False) 
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def update_order_status(request, order_id):
+    new_status = request.POST['new_status']
+    queries.update_delivery_status_using_order_id(order_id, new_status)
+    return HttpResponse('Success')
 
 #creates a customer
 @csrf_exempt
