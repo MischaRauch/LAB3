@@ -13,7 +13,8 @@ urlpatterns = [
     path('drinks/<int:drink_id>/', views.get_drink_price),
     path('deserts', views.get_deserts),                             #method doesnt exist? 
     path('desert/<int:desert_id>/', views.get_desert_price),
-    path('orders', views.get_orders),  
+    path('orders', views.get_orders),
+    path('showorder', views.get_show_order),  
     
     #post
     path('login', views.get_customer),

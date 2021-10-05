@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
+
+from django.http import response
 from PyInquirer import prompt
 import requests
 import json
@@ -19,6 +21,12 @@ main_list = {
     "choices": ["Display Menu Pizza", "Display Menu Drinks", "Display Menu Deserts", "Are you new?", "Login with customer_id", "Quit"],
 }
 sub_list = {
+    "type": "list",
+    "name": "choice",
+    "message": "Add Pizza",
+    "choices": ["Add Pizza"],
+}
+sub_sub_list = {
     "type": "list",
     "name": "choice",
     "message": "What do you want to do?",
@@ -72,15 +80,15 @@ def create_user(postal_code, country, street, house_number, city, first_name, la
 
 def add_pizza(pizza_id, quantity):
     response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": pizza_id, "quantity": quantity, "drink_id": 9999, "desert_id": 9999})
-    sub_selection()
+    sub_sub_selection()
 
 def add_drink(drink_id, quantity):
     response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": 9999, "quantity": quantity, "drink_id": drink_id, "desert_id": 9999})
-    sub_selection()
+    sub_sub_selection()
 
 def add_desert(desert_id, quantity):
     response = requests.post(BASE_URL + "/createOrderItem", data={"pizza_id": 9999, "quantity": quantity, "drink_id": 9999, "desert_id": desert_id})
-    sub_selection()
+    sub_sub_selection()
 
 def get_user(user_id):
     response = requests.get(BASE_URL + "/user/" + user_id)
@@ -132,6 +140,19 @@ def get_desserts():
         print('\t',desert_name, price)
         index = index +1 
 
+def show_order():
+    response = requests.get(BASE_URL + "/showorder")
+    order_dict = json.loads(response.json())
+    print("Your order contains: ")
+    for order in order_dict:
+        if (order['pizza_id'] == None):
+            del order['pizza_id']
+        if (order['desert_id'] == None):
+            del order['desert_id']
+        if (order['drink_id'] == None):
+            del order['drink_id']
+    pprint(order_dict)
+
 def sub_selection():
     while True:
         answers = prompt(sub_list)
@@ -139,13 +160,26 @@ def sub_selection():
         if answer == "Add Pizza":
             get_pizzaID = prompt(create_pizzaID_input)
             add_pizza(**get_pizzaID)
+            break
+
+def sub_sub_selection():
+    while True:
+        answers = prompt(sub_sub_list)
+        answer = answers["choice"]
+        if answer == "Add Pizza":
+            get_pizzaID = prompt(create_pizzaID_input)
+            add_pizza(**get_pizzaID)
+            break
         if answer == "Add Drink":
             get_drinkID = prompt(create_drinkID_input)
             add_drink(**get_drinkID)
+            break
         if answer == "Add Desert":
             get_desertID = prompt(create_desertID_input)
             add_desert(**get_desertID)    
+            break
         if answer == "Quit":
+            show_order()
             break
 
 def check_time():
@@ -155,12 +189,14 @@ def check_time():
 #TODO set employee status !! 
 def update_order_status_of_order(old_status, new_status, time_diff):
     current_time = datetime.now()
+    print("DATE TIME NOW ", current_time)
     response = requests.get(f'{BASE_URL}/orders?status={old_status}')
     orders_dict = json.loads(response.json())
     print(orders_dict)
     for ord in orders_dict:
         print(ord)
-        ord_time = datetime.strptime(ord.get('fields').get('order_time'), "%Y-%m-%dT%H:%M:%S.%fZ")
+        ord_time = datetime.strptime(ord.get('fields').get('order_time'), '%Y-%m-%dT%H:%M:%S.%f%z')
+        ord_time = ord_time.replace(tzinfo=None)
         if ( current_time -  ord_time ).total_seconds()  > time_diff:
             post_res = requests.post(f'{BASE_URL}/orders/{ord.get("pk")}/', data={'new_status': new_status})
             print(post_res)

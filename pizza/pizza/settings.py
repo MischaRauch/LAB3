@@ -85,7 +85,8 @@ DATABASES = {
          'USER': 'melicarioni',
          'PASSWORD': '5243',
          'HOST': '127.0.0.1',
-         'PORT': '3306'
+         'PORT': '3306',
+         'TIME_ZONE': 'Europe/Amsterdam'
      }
   #  'default': {},
   #  'users': {
@@ -131,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'CET'
+TIME_ZONE = 'Etc/GMT-2'
 
 USE_I18N = True
 

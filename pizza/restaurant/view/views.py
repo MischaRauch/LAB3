@@ -1,9 +1,11 @@
 from datetime import date
+import datetime
 import json
 import re
 from sys import set_asyncgen_hooks
 from django.http.response import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from restaurant.controller import queries 
 from restaurant.model.models import pizza, drink, desert, orders 
@@ -57,6 +59,7 @@ def get_drink_price(request, drink_id):
 
 def get_deserts(request):
     drink_list = desert.objects.order_by('-desert_id')
+    print("LOOKS LIKE ", drink_list)
     data = serializers.serialize('json', drink_list, fields=('desert_id','desert_name'))
     return JsonResponse(data, safe= False)
 
@@ -70,6 +73,13 @@ def get_orders(request):
     order_list = queries.get_orders_by_delivery_status(status)
     data = serializers.serialize('json', order_list, fields=('order_id', 'order_time'))
     return JsonResponse(data, safe=False)
+
+#shows the ordered items and quantity, the estimated delivery time, status and amount of money
+def get_show_order(request):
+    stuff = queries.get_show_order(new_order)
+    data = json.dumps(stuff)
+    return JsonResponse(data, safe=False)
+
 
 @csrf_exempt
 def update_order_status(request, order_id):
@@ -109,18 +119,15 @@ def get_customer(request):
 def create_order_item(request): #TODO SOMETHING IS WRONG WITH THISSSSSS 
    # print('CUSTOMER ', new_order) 
     if (request.method == 'POST'):     
-        print('GOT HERE')
-        print(type(request.POST['drink_id']))
-        print(request.POST['desert_id'])
-        print(((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999'))
+        #print("TIME ", timezone.localtime(timezone.now()))
+        #print(type(request.POST['drink_id']))
+        #print(request.POST['desert_id'])
+        #print(((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999'))
         if (((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
-            print('Pizza_id', request.POST['pizza_id'])
             queries.create_order_item(new_order, request.POST['quantity'], request.POST['pizza_id'])
         if (((request.POST['pizza_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
-            print('Drink_ID')
             queries.create_order_item(new_order, request.POST['quantity'], None, request.POST['drink_id'])
         if (((request.POST['pizza_id']) == '9999') and ((request.POST['drink_id']) == '9999') ):
-            print('Dessert_Id')
             queries.create_order_item(new_order, request.POST['quantity'], None, None,  request.POST['desert_id'])
         
     else:

@@ -1,10 +1,13 @@
 #return one pizza
 from os import name
+
+from django.db import models
 from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
 from restaurant.model.models import pizza,desert,drink, address, customer, order_item, employee , orders, order_item, delivery 
 from django.utils.timezone import now 
 from datetime import datetime 
+from django.db.models import F
 
 
 #returns 1 pizza id based on id
@@ -36,17 +39,18 @@ def get_desert_price(id):
 	vat = 0.09
 	margin_of_profit = 0.4
 	price = 0
-	test = desert.objects.filter(desert_id = id).values('desert_price')
+	test = desert.objects.filter(desert_name = id).values('desert_price')
 	for selected_desert in test:
 		price = selected_desert.get('desert_price')
 	return price + price*vat + price*margin_of_profit
 
 #returns drink price including VAT and marging of profit   
 def get_drink_price(id):
+	print("WHATS THAT ", id)
 	vat = 0.09
 	margin_of_profit = 0.4
 	price = 0
-	test = drink.objects.filter(drink_id = id).values('drink_price')
+	test = drink.objects.filter(drink_name = id).values('drink_price')
 	for selected_drink in test:
 		price = selected_drink.get('drink_price')
 	return price + price*vat + price*margin_of_profit
@@ -143,8 +147,10 @@ def create_new_order_new_customer(postal_code, country, street, house_number, ci
 	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	
 	#FIND OUT CUSTOMER_ID to pass to new method
-	print(new_customer.customer_id)
 	create_new_order_old_customer(new_customer.customer_id)
+	#has to return the order id not the customer
+	order = orders.objects.filter(customer_id = new_customer.customer_id).first()
+	return order
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
@@ -155,9 +161,15 @@ def create_new_order_old_customer(customer_id):
 	print ('line 110' , employee_object)
 	#create delivery first 
 	new_delivery = create_delivery(employee_object)
-	
+	#increase discount level by 1
+	customer.objects.filter(customer_id=customer_id).update(discount_available=F('discount_available') + 1)
+	discount = customer.objects.filter(customer_id=customer_id).values('discount_available')
 	total_price= 0 #need to update it after 
 	total_discount = 0 #need to update it after
+	for count in discount:
+		if (count['discount_available'] >= 4):
+			total_discount = 5	
+
 	new_order = orders.objects.create(customer_id = get_customer_by_id(customer_id), total_price= total_price, total_discount = total_discount, delivery_id = new_delivery  )
 	return new_order 
 
@@ -168,6 +180,8 @@ def create_order_item(order_object, quantity,  pizza_id= None, drink_id= None, d
 		print('line 135')
 		pizza_object = get_pizza_by_id(pizza_id)
 		print('pizza_object    ', pizza_object)
+		print('VALUE ', order_object)
+		print('value type ',type(order_object))
 
 		order_item.objects.create(pizza_id = pizza_object, quantity= quantity, order_id = order_object)
 	elif drink_id:
@@ -178,6 +192,10 @@ def create_order_item(order_object, quantity,  pizza_id= None, drink_id= None, d
 		#get desert object 
 		desert_object = get_desert_by_id(desert_id)
 		order_item.objects.create(desert_id = desert_object, quantity= quantity, order_id = order_object)
+
+	#calculate price and update
+	order_int = getattr(order_object, 'order_id')
+	update_price_of_order(order_int)
 
 def get_orders_by_delivery_status(status):
 	order_results = []
@@ -231,18 +249,34 @@ def update_price_of_order(order_id):
 	all_pizza_items =order_item.objects.filter(order_id=order_id, pizza_id__isnull=False).values('pizza_id')
 	all_drink_items =order_item.objects.filter(order_id=order_id, drink_id__isnull=False).values('drink_id')
 	all_desert_items =order_item.objects.filter(order_id=order_id, desert_id__isnull=False).values('desert_id')
+	quantity = order_item.objects.filter(order_id=order_id).values('quantity')
+	
+	for i in quantity:
+		quant = i['quantity']
 
 	for pizza_item in all_pizza_items:
 		pizza = get_pizza_by_id(pizza_item.get('pizza_id'))
-		total_order_price += get_pizza_price(pizza)
+		total_order_price += get_pizza_price(pizza) * quant
 	
 	for drink_item in all_drink_items:
 		drink = get_drink_by_id(drink_item.get('drink_id'))
-		total_order_price += get_drink_price(drink)
+		total_order_price += get_drink_price(drink) * quant
 
 	for desert_item in all_desert_items:
 		desert = get_desert_by_id(desert_item.get('desert_id'))
-		total_order_price +=get_desert_price(desert)
+		total_order_price +=get_desert_price(desert) * quant
+
+	discount = orders.objects.filter(order_id=order_id).values('total_discount')
+	print('PRIZE ', total_order_price)
+	for disc in discount:
+		if (disc['total_discount'] > 0):
+			total_order_price = total_order_price - disc['total_discount']
+			customer_id = orders.objects.filter(order_id=order_id).values('customer_id')
+			for fo in customer_id:
+				print('RESET DISCOUNT ', fo)
+				customer.objects.filter(customer_id=fo['customer_id']).update(discount_available=F('discount_available') == 0)
+	print('DISCOUNT ', total_order_price)
+	#if(orders.objects.filter(order_id=order_id).filter('total_discount'))
 
 	orders.objects.filter(order_id=order_id).update(total_price=total_order_price)
 
@@ -257,7 +291,13 @@ def update_employee_status_using_order_id(order_id, new_status):
 	
 	return number_or_rows_changed
 
-
+def get_show_order(order_id):
+	#get ordered items and quantity and return it as a list
+	choosen_stuff = order_item.objects.filter(order_id=order_id.order_id).values('pizza_id','drink_id','desert_id','quantity')
+	stuff_list = []
+	for choosen in choosen_stuff:
+		stuff_list.append(choosen)
+	return stuff_list
 
 #TODO 
 """

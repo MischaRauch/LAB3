@@ -1,6 +1,8 @@
 from django.db import models #similar to SQLalchemy 
 from django.contrib.contenttypes.fields import GenericForeignKey
 from datetime import datetime
+from django.utils import timezone
+import datetime
 
 # Create your models here.
 
@@ -61,7 +63,7 @@ class customer(models.Model):
     last_name = models.CharField(max_length=100)
     email_address = models.CharField(max_length=100)
     phone_number = models.IntegerField(default=0) 
-    discount_available = models.BooleanField(default=False)
+    discount_available = models.IntegerField(default=0)
     address_id = models.ForeignKey(address, on_delete= models.CASCADE) #FK
     def __str__(self): 
         return str(self.customer_id)
@@ -79,7 +81,7 @@ class delivery(models.Model):
     delivery_id = models.AutoField(primary_key=True)    
     employee_id = models.ForeignKey(employee, on_delete=models.CASCADE)    #FK 
     status = models.CharField(max_length=50) #Preparation, On the way, Received by customer. 
-    time_when_employee_left = models.DateTimeField('orderedTime', default=datetime.now, blank=True )
+    time_when_employee_left = models.DateTimeField('orderedTime', default=datetime.datetime.now(), blank=True )
     def __str__(self): 
         return str(self.delivery_id)
 
@@ -88,7 +90,8 @@ class orders(models.Model):
     customer_id = models.ForeignKey(customer, on_delete=models.CASCADE)    #FK 
     total_price = models.FloatField(default=0) #calculated from drink, desert and pizza 
     total_discount= models.FloatField(default=0) # get boolean from costumer 
-    order_time = models.DateTimeField('orderedTime',  default=datetime.now, blank=True)
+    #order_time = models.DateTimeField('orderedTime',  default=datetime.now(), blank=True)
+    order_time = models.DateTimeField('orderedTime',  default=timezone.localtime(timezone.now()), blank=True)
     delivery_id = models.ForeignKey(delivery, on_delete=models.CASCADE)
 
     def __str__(self):
