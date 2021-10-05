@@ -81,7 +81,6 @@ class delivery(models.Model):
     delivery_id = models.AutoField(primary_key=True)    
     employee_id = models.ForeignKey(employee, on_delete=models.CASCADE)    #FK 
     status = models.CharField(max_length=50) #Preparation, On the way, Received by customer. 
-    time_when_employee_left = models.DateTimeField('orderedTime', default=datetime.datetime.now(), blank=True )
     def __str__(self): 
         return str(self.delivery_id)
 

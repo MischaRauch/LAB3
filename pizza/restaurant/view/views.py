@@ -3,7 +3,7 @@ import datetime
 import json
 import re
 from sys import set_asyncgen_hooks
-from django.http.response import HttpResponse, JsonResponse
+from django.http.response import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -15,13 +15,8 @@ from django.core import serializers
 #For testing purposes
 def test(request):
     print ('im here          ' )
-    queries.update_employee_status_using_order_id(1, 'Changed')
-   # check_price = queries.get_pizza_price(1)
-   # print (' PRICE PIZZA   ' , check_price)
-   # check_address = queries.create_address_customer(postal_code= '61rpp', country= 'nl', street= 'capu', house_number= 11, city= 'maas', first_name='ollie', last_name= 'rock', email='whatever ', phone= 69)  
-   # new_order = queries.create_new_order_old_customer('1') 
-   # print (' check address  ' , new_order)
-   # queries.create_order_item(new_order, quantity= 2, pizza_id= 1)
+   # queries.get_delivery_time_and_status_from_order(1)
+    queries.get_delivery_time_and_status_from_order(1) 
     return HttpResponse('Success')
 
 #returns all pizzas
@@ -87,6 +82,14 @@ def update_order_status(request, order_id):
     queries.update_delivery_status_using_order_id(order_id, new_status)
     return HttpResponse('Success')
 
+#TODO 
+@csrf_exempt
+def update_employee_status(request):
+    queries.update_employee_status()
+    return HttpResponse('Success')
+
+
+
 #creates a customer
 @csrf_exempt
 def create_customer(request):
@@ -95,39 +98,37 @@ def create_customer(request):
         #postal_code, country, street, house_number, city, first_name, last_name, email, phone
         global new_order
         new_order = queries.create_new_order_new_customer(request.POST['postal_code'],request.POST['country'],request.POST['street'],request.POST['house_number'],request.POST['city'],request.POST['first_name'], request.POST['last_name'],request.POST['email'],request.POST['phone'])
+        print("GT HEREE")
         print("NEW ORDER ",new_order)
     else:
         print('NO POST')
-   # request.session['order'] = new_order
-   # if new_order is None:
-   #     order = new_order
-   # print("ORDER ", request.sesssion.get('order'))
-    
-    #queries.create_address_customer(request)
+   
     return HttpResponse('Success')
 
 @csrf_exempt
 def get_customer(request):
     if (request.method == 'POST'):
-        global new_order
+        #global new_order
+        print("GOT HERE")
         new_order = queries.create_new_order_old_customer(request.POST['customer_id'])
-    else:
-        print('NO POST')
+        print("ORDERRRR ", new_order)
+        if (new_order == False):
+             return HttpResponseNotAllowed('All deliveries are busy.')
     return HttpResponse('Success')
+   
 
 @csrf_exempt
-def create_order_item(request): #TODO SOMETHING IS WRONG WITH THISSSSSS 
-   # print('CUSTOMER ', new_order) 
-    if (request.method == 'POST'):     
-        #print("TIME ", timezone.localtime(timezone.now()))
-        #print(type(request.POST['drink_id']))
-        #print(request.POST['desert_id'])
-        #print(((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999'))
+def create_order_item(request):  
+    #global new_order 
+    if (request.method == 'POST'):   
         if (((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
+            
             queries.create_order_item(new_order, request.POST['quantity'], request.POST['pizza_id'])
         if (((request.POST['pizza_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
+          
             queries.create_order_item(new_order, request.POST['quantity'], None, request.POST['drink_id'])
         if (((request.POST['pizza_id']) == '9999') and ((request.POST['drink_id']) == '9999') ):
+           
             queries.create_order_item(new_order, request.POST['quantity'], None, None,  request.POST['desert_id'])
         
     else:
