@@ -6,7 +6,7 @@ from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
 from restaurant.model.models import pizza,desert,drink, address, customer, order_item, employee , orders, order_item, delivery 
 from django.utils.timezone import now 
-from datetime import datetime 
+from datetime import date, datetime 
 from django.db.models import F
 from datetime import datetime, timedelta 
 
@@ -45,6 +45,16 @@ def get_desert_price(id):
 		price = selected_desert.get('desert_price')
 	return price + price*vat + price*margin_of_profit
 
+#returns desert price including VAT and marging of profit   
+def get_desert_price2(id):
+	vat = 0.09
+	margin_of_profit = 0.4
+	price = 0
+	test = desert.objects.filter(desert_id = id).values('desert_price')
+	for selected_desert in test:
+		price = selected_desert.get('desert_price')
+	return price + price*vat + price*margin_of_profit
+
 #returns drink price including VAT and marging of profit   
 def get_drink_price(id):
 	print("WHATS THAT ", id)
@@ -52,6 +62,17 @@ def get_drink_price(id):
 	margin_of_profit = 0.4
 	price = 0
 	test = drink.objects.filter(drink_name = id).values('drink_price')
+	for selected_drink in test:
+		price = selected_drink.get('drink_price')
+	return price + price*vat + price*margin_of_profit
+
+#returns drink price including VAT and marging of profit   
+def get_drink_price2(id):
+	print("WHATS THAT ", id)
+	vat = 0.09
+	margin_of_profit = 0.4
+	price = 0
+	test = drink.objects.filter(drink_id = id).values('drink_price')
 	for selected_drink in test:
 		price = selected_drink.get('drink_price')
 	return price + price*vat + price*margin_of_profit
@@ -108,12 +129,20 @@ def get_delivery_id(delivery_object):
 
 #TODO connect it to app_manager ALSO add button in GUI that gives this option  
 def get_delivery_time_and_status_from_order(order_id):
-	order_info = orders.objects.filter(order_id=order_id).values('order_time', 'delivery_id')[0]
+	order_info = orders.objects.filter(order_id=order_id).values('order_time', 'delivery_id', 'total_price', 'order_id')[0]
 	delivery_info = delivery.objects.filter(delivery_id = order_info['delivery_id']).values('status')[0]
 	time_change = timedelta(minutes=15)
 	new_time = order_info['order_time'] + time_change 
-	information = 'Status of order:', delivery_info['status'] , order_info['order_time'].strftime('. The order was made at %H:%M'),  new_time.strftime('. Arrival time: %H:%M') 
+	information = 'Status of order:', delivery_info['status'] , order_info['order_time'].strftime('. The order was made at %H:%M'),  new_time.strftime('. Arrival time: %H:%M'), 'The total price is: ', order_info['total_price'], 'The order id is: ',order_info['order_id']
 	print (information)
+	return information 
+
+def get_delivery_time_and_status_from_order2(order_id):
+	order_info = orders.objects.filter(order_id=order_id).values('order_time', 'delivery_id', 'total_price')[0]
+	delivery_info = delivery.objects.filter(delivery_id = order_info['delivery_id']).values('status')[0]
+	time_change = timedelta(minutes=15)
+	new_time = order_info['order_time'] + time_change 
+	information = 'Status of order:', delivery_info['status'] , order_info['order_time'].strftime('. The order was made at %H:%M'),  new_time.strftime('. Arrival time: %H:%M')
 	return information 
 
 
@@ -182,8 +211,8 @@ def create_new_order_old_customer(customer_id):
 		emp = employ['status_employee']
 	#	print("WORKS ", emp)
 	#print("GOT HERE 3",employee_delivery['status_employee'])
-	if emp == 'On delivery': 
-		return False 	
+	#if emp == 'On delivery': 
+	#	return False 	
 	employee.objects.filter(employee_id=employee_object.employee_id).update(status_employee='On delivery')
 	
 	#create delivery first 
@@ -194,10 +223,10 @@ def create_new_order_old_customer(customer_id):
 	total_price= 0 #need to update it after 
 	total_discount = 0 #need to update it after
 	for count in discount:
-		if (count['discount_available'] >= 4):
+		if (count['discount_available'] > 10):
 			total_discount = 5	
 
-	new_order = orders.objects.create(customer_id = get_customer_by_id(customer_id), total_price= total_price, total_discount = total_discount, delivery_id = new_delivery  )
+	new_order = orders.objects.create(customer_id = get_customer_by_id(customer_id), total_price= total_price, total_discount = total_discount, delivery_id = new_delivery, order_time=datetime.now()  )
 	return new_order 
 
 
@@ -228,6 +257,7 @@ def create_order_item(order_object, quantity,  pizza_id= None, drink_id= None, d
 def get_orders_by_delivery_status(status):
 	order_results = []
 	deliveries = delivery.objects.filter(status=status)
+	#print("DATA ", deliveries)
 	for deliv in deliveries:
 		order = orders.objects.filter(delivery_id=deliv)[0]
 		order_results.append(order)
@@ -310,7 +340,7 @@ def update_employee_status_using_order_id(order_id, new_status):
 	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
 	delivery_obj2= delivery.objects.filter(delivery_id=delivery_obj['delivery_id'] ).values('employee_id')[0]
 	employee_object = employee.objects.filter(employee_id = delivery_obj2['employee_id']).values('employee_id')[0]
-	number_or_rows_changed = employee.objects.filter(employee_id=employee_object['employee_id']).update(status=new_status)
+	number_or_rows_changed = employee.objects.filter(employee_id=employee_object['employee_id']).update(status_employee=new_status)
 
 	return number_or_rows_changed
 
@@ -321,6 +351,21 @@ def get_show_order(order_id):
 	for choosen in choosen_stuff:
 		stuff_list.append(choosen)
 	return stuff_list
+
+def delete_order(order_id):
+	time = orders.objects.filter(order_id=order_id).values('order_time','delivery_id')[0]
+	current_time = datetime.now()
+	current_time = current_time.replace(tzinfo=None)
+	time = time['order_time'].replace(tzinfo=None)
+	if (current_time - time).total_seconds() < 5*60:
+		#deliver_id = orders.objects.filter(delivery_id=time['delivery_id']).values('employee_id')[0]
+		#print('delivery_id', deliver_id)
+		#employee_id = delivery.objects.filter(employee_id=deliver_id['employee_id']).update(status='Free')
+		#print('employee', employee_id)
+		update_employee_status_using_order_id(order_id,'Free')
+		print("DONE")
+		orders.objects.filter(order_id=order_id).delete()
+
 
 #TODO 
 """

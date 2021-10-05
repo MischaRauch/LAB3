@@ -81,22 +81,24 @@ INSERT INTO restaurant_employee VALUES
     (4, 'Marie', 'bersia', '59', 'Free'),
     (5, 'Adrien', 'bersia', '60', 'Free'),
     (6, 'Oscar', 'bersia', '61', 'Free'), 
-    (7, 'Tom', 'Rauch', '62', 'Free'),
-    (8, 'Ollie', 'Rauch', '56', 'Free'),
-    (9, 'Alex', 'Carioni', '57', 'Free'),
-    (10, 'Bianca', 'bersia', '58', 'Free'),
-    (11, 'Marie', 'bersia', '59', 'Free'),
-    (12, 'Spencer', 'bersia', '60', 'Free'), 
-    (13, 'Simon', 'bersia', '61', 'Free'), 
-    (14, 'Konstantine', 'bersia', '62', 'Free')
+    (7, 'Tom', 'Rauch', '62', 'Free')
+
 ;
 
 INSERT INTO restaurant_address VALUES 
 #address_id, posta_code, coutry, street, house_number, city
-(1, '6211RV', 'netherlands', 'capucijengag', '22', 'maastricht')
+(1, '6211RV', 'netherlands', 'capucijengag', '22', 'maastricht'),
+(2, '5611RV', 'netherlands', 'capucijengag', '22', 'maastricht'),
+(3, '5711RV', 'netherlands', 'capucijengag', '22', 'maastricht'),
+(4, '5811RV', 'netherlands', 'capucijengag', '22', 'maastricht'),
+(5, '5911RV', 'netherlands', 'capucijengag', '22', 'maastricht')
 ;
 
 INSERT INTO restaurant_customer VALUES 
 #id, name, last_name, email_Address, phone_number, discount_available, address_id 
-(1, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 1)
+(1, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 1),
+(2, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 2),
+(3, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 3),
+(4, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 4),
+(5, 'meli', 'carioni', 'carioni.rosamelia@gmail.com', 1234, false, 5)
 ; 

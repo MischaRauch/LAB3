@@ -48,7 +48,7 @@ def get_drinks(request):
     return JsonResponse(data, safe= False)
 
 def get_drink_price(request, drink_id):
-    price = queries.get_drink_price(drink_id)
+    price = queries.get_drink_price2(drink_id)
     data = json.dumps(price)
     return JsonResponse(data, safe=False)
 
@@ -59,7 +59,8 @@ def get_deserts(request):
     return JsonResponse(data, safe= False)
 
 def get_desert_price(request, desert_id):
-    price = queries.get_desert_price(desert_id)
+    price = queries.get_desert_price2(desert_id)
+    print("YUHUHU MISCHA ", price)
     data = json.dumps(price)
     return JsonResponse(data, safe=False)
 
@@ -71,8 +72,16 @@ def get_orders(request):
 
 #shows the ordered items and quantity, the estimated delivery time, status and amount of money
 def get_show_order(request):
+    global new_order
+    print('HELLO order ', new_order)
     stuff = queries.get_show_order(new_order)
     data = json.dumps(stuff)
+    return JsonResponse(data, safe=False)
+
+def get_delivery_estimation(request):
+    global new_order
+    info = queries.get_delivery_time_and_status_from_order(new_order.order_id)
+    data = json.dumps(info)
     return JsonResponse(data, safe=False)
 
 
@@ -108,7 +117,7 @@ def create_customer(request):
 @csrf_exempt
 def get_customer(request):
     if (request.method == 'POST'):
-        #global new_order
+        global new_order
         print("GOT HERE")
         new_order = queries.create_new_order_old_customer(request.POST['customer_id'])
         print("ORDERRRR ", new_order)
@@ -119,10 +128,9 @@ def get_customer(request):
 
 @csrf_exempt
 def create_order_item(request):  
-    #global new_order 
     if (request.method == 'POST'):   
         if (((request.POST['drink_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
-            
+            print("ORRDDDERDS ",new_order)
             queries.create_order_item(new_order, request.POST['quantity'], request.POST['pizza_id'])
         if (((request.POST['pizza_id']) == '9999') and ((request.POST['desert_id']) == '9999') ):
           
@@ -134,6 +142,28 @@ def create_order_item(request):
     else:
         print('NO POST')
     
+    return HttpResponse('Success')
+
+@csrf_exempt
+def cancel_order(request):
+    print("GOTTT HERE 234")
+    if (request.method == 'POST'):   
+        print("GOTTT HERE")
+        queries.delete_order(request.POST['order_id'])
+    else:
+        print('NO POST')
+    return HttpResponse('Success')
+
+@csrf_exempt
+def order_info(request):
+    if (request.method == 'POST'):
+        print("DATAAA ",request.POST['order_id'])
+        string = queries.get_delivery_time_and_status_from_order2(request.POST['order_id'])
+        data = json.dumps(string)
+        print("STIRNG SS", data)
+        return JsonResponse(data, safe=False)
+    else:
+        print("NO POST")
     return HttpResponse('Success')
 
 

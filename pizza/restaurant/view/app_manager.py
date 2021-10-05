@@ -18,7 +18,7 @@ main_list = {
     "type": "list",
     "name": "choice",
     "message": "What do you want to do?",
-    "choices": ["Display Menu Pizza", "Display Menu Drinks", "Display Menu Deserts", "Are you new?", "Login with customer_id", "Quit"],
+    "choices": ["Display Menu Pizza", "Display Menu Drinks", "Display Menu Deserts", "Are you new?", "Login with customer_id", "Cancel Order", "Get Order Info" ,"Quit"],
 }
 sub_list = {
     "type": "list",
@@ -50,11 +50,14 @@ create_desertID_input =  [
     {"type": "input", "message": "Enter the desert ID", "name": "desert_id"},
     {"type": "input", "message": "Enter the quantity", "name": "quantity"},
 ]
+create_orderID_input = [
+    {"type": "input", "message": "Enter the order ID", "name": "order_id"},
+]
 
 
 #postal_code, country, street, house_number, city, first_name, last_name, email, phone
 create_user_questions = [
-    {"type": "input", "message": "Enter your postal_code", "name": "postal_code"},
+    {"type": "input", "message": "Enter your postal_code (56-62)", "name": "postal_code"},
     {"type": "input", "message": "Enter your country", "name": "country"},
     {"type": "input", "message": "Enter your street", "name": "street"},
     {"type": "input", "message": "Enter your house_number", "name": "house_number"},
@@ -73,7 +76,7 @@ def login(customer_id):
         return False 
     else : 
         sub_selection()
-        print(response.json())
+       # print(response.json())
 
 
 def create_user(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
@@ -97,6 +100,14 @@ def add_desert(desert_id, quantity):
 def get_user(user_id):
     response = requests.get(BASE_URL + "/user/" + user_id)
     print(response.json())
+
+def create_cancel_order(order_id):
+    response = requests.post(BASE_URL + "/cancelOrder", data={"order_id": order_id})
+
+def create_order_info(order_id):
+    response = requests.post(BASE_URL + "/orderinfo", data={"order_id": order_id})
+    info = json.loads(response.json())
+    print(info)
 
 def get_menu():
     print("TEST:  ",BASE_URL)
@@ -147,7 +158,8 @@ def get_desserts():
 def show_order():
     response = requests.get(BASE_URL + "/showorder")
     order_dict = json.loads(response.json())
-    print("Your order contains: ")
+    response1 = requests.get(BASE_URL + "/deliveryestimation")
+    responsee = json.loads(response1.json())
     for order in order_dict:
         if (order['pizza_id'] == None):
             del order['pizza_id']
@@ -156,6 +168,7 @@ def show_order():
         if (order['drink_id'] == None):
             del order['drink_id']
     pprint(order_dict)
+    pprint(responsee)
 
 def sub_selection():
     while True:
@@ -194,12 +207,13 @@ def check_time():
 def update_order_status_of_order(old_status, new_status, time_diff):
     current_time = datetime.now()
     response = requests.get(f'{BASE_URL}/orders?status={old_status}')
-    orders_dict = json.loads(response.json())
-    for ord in orders_dict:
-        ord_time = datetime.strptime(ord.get('fields').get('order_time'), '%Y-%m-%dT%H:%M:%S.%f%z')
-        ord_time = ord_time.replace(tzinfo=None)
-        if ( current_time -  ord_time ).total_seconds()  > time_diff:
-            post_res = requests.post(f'{BASE_URL}/orders/{ord.get("pk")}/', data={'new_status': new_status})
+    if(response == 200):
+        orders_dict = json.loads(response.json())
+        for ord in orders_dict:
+            ord_time = datetime.strptime(ord.get('fields').get('order_time'), '%Y-%m-%dT%H:%M:%S.%f%z')
+            ord_time = ord_time.replace(tzinfo=None)
+            if ( current_time -  ord_time ).total_seconds()  > time_diff:
+                post_res = requests.post(f'{BASE_URL}/orders/{ord.get("pk")}/', data={'new_status': new_status})
 
 def update_employee_status():   
     response = requests.get(BASE_URL + "/updateEmployees") 
@@ -209,22 +223,33 @@ def update_employee_status():
 #TODO add option to display status of order
 if __name__ == "__main__":
     while True:
-        check_time()
+        
         answers = prompt(main_list)
         answer = answers["choice"]
         if answer == "Are you new?":
             create_answers = prompt(create_user_questions)
             create_user(**create_answers)
+            check_time()
         if answer == "Login with customer_id":
             login_answers = prompt(login_id)
             answer = login(**login_answers)
-            if (answer== False): 
-                break 
+            check_time()
+        if answer == "Cancel Order":
+            order_id = prompt(create_orderID_input)
+            create_cancel_order(**order_id)   
+        if answer == "Get Order Info":
+            order_id = prompt(create_orderID_input)
+            create_order_info(**order_id)
         if answer == "Quit":
             break
         if answer == "Display Menu Pizza":
             getsomething = get_menu()
+            check_time()
         if answer == "Display Menu Drinks":
             getsomething = get_drinks()
+            check_time()
         if answer == "Display Menu Deserts":
             getsomething = get_desserts()
+            check_time()
+        
+        
