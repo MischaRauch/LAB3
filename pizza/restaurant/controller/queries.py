@@ -4,7 +4,7 @@ from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
 from restaurant.model.models import pizza,desert,drink, address, customer, order_item, employee , orders, order_item, delivery 
 from django.utils.timezone import now 
-from datetime import datetime 
+from datetime import datetime, timedelta 
 
 
 #returns 1 pizza id based on id
@@ -96,19 +96,37 @@ def get_postal_code(id):
 		print( selected_customer.get('postal_code'))
 		return selected_customer.get('postal_code')
 	
-
 def get_delivery_id(delivery_object):
 	test = delivery.objects.filter().values('delivery_id')
 	for selected_delivery in test:
 		return selected_delivery.get('delivery_id')
 
+#TODO connect it to app_manager ALSO add button in GUI that gives this option  
+def get_delivery_time_and_status_from_order(order_id):
+	order_info = orders.objects.filter(order_id=order_id).values('order_time', 'delivery_id')[0]
+	delivery_info = delivery.objects.filter(delivery_id = order_info['delivery_id']).values('status')[0]
+	time_change = timedelta(minutes=15)
+	new_time = order_info['order_time'] + time_change 
+	information = 'Status of order:', delivery_info['status'] , order_info['order_time'].strftime('. The order was made at %H:%M'),  new_time.strftime('. Arrival time: %H:%M') 
+	print (information)
+	return information 
 
-#MAYBE NOT NEEDED return area code from employee 
-def get_area_code(employee_id):
-	test = employee.objects.filter(employee_id = id).values('area_code')
-	for selected_employee in test:
-		return selected_employee.get('area_code')
 
+
+def update_employee_status():
+	employees_delivering = employee.objects.filter(status_employee ='On delivery').values('employee_id')
+	current_time = datetime.now()
+	for emp in employees_delivering:
+		deliveries = delivery.objects.filter(employee_id = emp['employee_id'], status = 'Received by customer').values['delivery_id'] 
+		should_you_update= True 
+		for deliv in deliveries:
+			ord = orders.objects.filter(deliery_id = deliv['delivery_id']).values['order_time'][0]
+			if (current_time - ord['order_time']) > 30*60:  
+				should_you_update= False
+				break 
+		if should_you_update:
+			employee.objects.filter(employee_id=emp['employee_id']).update(status='Free')
+	return employees_delivering 
 
 
 def is_topping_vegetarian(id):
@@ -141,18 +159,21 @@ def create_new_order_new_customer(postal_code, country, street, house_number, ci
 	#create an address and customer 
 	# TODO
 	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
-	
 	#FIND OUT CUSTOMER_ID to pass to new method
-	print(new_customer.customer_id)
 	create_new_order_old_customer(new_customer.customer_id)
+	order= orders.objects.filter(customer_id=new_customer.customer_id).first()
+	return order 
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
 	customer_postal_code= get_postal_code(customer_id)
-	print ('line 107' , customer_postal_code)
 	#find out employee 
 	employee_object = get_employee_based_on_user_postal_code(customer_postal_code)
-	print ('line 110' , employee_object)
+	employee_delivery = employee.objects.filter(employee_id=employee_object.employee_id).values('status_employee') 
+	if employee_delivery['status_employee'] == 'On delivery': 
+		return False 	
+	employee.objects.filter(employee_id=employee_object.employee_id).update(status_employee='On delivery')
+	
 	#create delivery first 
 	new_delivery = create_delivery(employee_object)
 	
@@ -160,6 +181,7 @@ def create_new_order_old_customer(customer_id):
 	total_discount = 0 #need to update it after
 	new_order = orders.objects.create(customer_id = get_customer_by_id(customer_id), total_price= total_price, total_discount = total_discount, delivery_id = new_delivery  )
 	return new_order 
+
 
 
 def create_order_item(order_object, quantity,  pizza_id= None, drink_id= None, desert_id=None ): 
@@ -190,10 +212,6 @@ def get_orders_by_delivery_status(status):
 def create_delivery (employee_object): 
 	new_delivery = delivery.objects.create(employee_id= employee_object, status= 'Preparation')
 	return new_delivery
-
-def create_new_order_item(pizza_id, drink_id, desert_id, quantity, order_id):
-	new_order_item = order_item.obejcts.create(quantity = quantity, pizza_id= pizza_id, drink_id= drink_id, desert_id = desert_id, irder_id=order_id )
-	return new_order_item 
 
 def create_only_address(postal_code, country, street, house_number, city):
     #create new address
@@ -252,9 +270,8 @@ def update_employee_status_using_order_id(order_id, new_status):
 	delivery_obj = orders.objects.filter(order_id=order_id).values('delivery_id')[0]
 	delivery_obj2= delivery.objects.filter(delivery_id=delivery_obj['delivery_id'] ).values('employee_id')[0]
 	employee_object = employee.objects.filter(employee_id = delivery_obj2['employee_id']).values('employee_id')[0]
-	
 	number_or_rows_changed = employee.objects.filter(employee_id=employee_object['employee_id']).update(status=new_status)
-	
+
 	return number_or_rows_changed
 
 
@@ -264,12 +281,6 @@ def update_employee_status_using_order_id(order_id, new_status):
 Method delete order (only possible in first 5 mins)
 """
 
-"""
-order min 1 pizza 
-"""
-"""
-change status employee , call the method from create_order to set it unavailable from 30 min. Also in that method check if employee is available before assigning it to deliver 
-"""
 
 
 

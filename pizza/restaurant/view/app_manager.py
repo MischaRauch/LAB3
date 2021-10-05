@@ -5,10 +5,10 @@ import requests
 import json
 import time 
 from pprint import pprint
-import threading
 from datetime import datetime
 
 from requests.api import request
+
 
 BASE_URL = "http://localhost:8000"
 
@@ -60,8 +60,12 @@ create_user_questions = [
 
 def login(customer_id):
     response = requests.post(BASE_URL + "/login", data={"customer_id": customer_id})
-    sub_selection()
-    #print(response.json())
+    if (response.status_code != 200):
+        print ('All employees are busy. Try in 5 minutes. ')
+        return False 
+    else : 
+        sub_selection()
+        print(response.json())
 
 
 def create_user(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
@@ -151,19 +155,25 @@ def sub_selection():
 def check_time():
     update_order_status_of_order('Preparation', 'On the way', 60*5)
     update_order_status_of_order('On the way', 'Received by customer', 60*15)
+    update_employee_status()
 
-#TODO set employee status !! 
 def update_order_status_of_order(old_status, new_status, time_diff):
     current_time = datetime.now()
     response = requests.get(f'{BASE_URL}/orders?status={old_status}')
     orders_dict = json.loads(response.json())
-    print(orders_dict)
+    #print(orders_dict)
     for ord in orders_dict:
-        print(ord)
+        #print(ord)
         ord_time = datetime.strptime(ord.get('fields').get('order_time'), "%Y-%m-%dT%H:%M:%S.%fZ")
         if ( current_time -  ord_time ).total_seconds()  > time_diff:
             post_res = requests.post(f'{BASE_URL}/orders/{ord.get("pk")}/', data={'new_status': new_status})
-            print(post_res)
+            #print(post_res)
+
+#TODO 
+def update_employee_status():   
+    response = requests.get(BASE_URL + "/updateEmployees") 
+    #print (response)
+
 
 
 
@@ -178,7 +188,9 @@ if __name__ == "__main__":
         if answer == "Login with customer_id":
             check_time()
             login_answers = prompt(login_id)
-            login(**login_answers)
+            answer = login(**login_answers)
+            if (answer== False): 
+                break 
         if answer == "Quit":
             check_time()
             break
