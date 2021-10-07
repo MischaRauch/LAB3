@@ -73,7 +73,7 @@ def login(customer_id):
     response = requests.post(BASE_URL + "/login", data={"customer_id": customer_id})
     if (response.status_code != 200):
         print ('All employees are busy. Try in 5 minutes. ')
-        return False 
+        exit()
     else : 
         sub_selection()
        # print(response.json())
@@ -81,6 +81,9 @@ def login(customer_id):
 
 def create_user(postal_code, country, street, house_number, city, first_name, last_name, email, phone):
     response = requests.post(BASE_URL + "/createCustomer", data={"postal_code": postal_code, "country": country, "street": street, "house_number": house_number, "city": city, "first_name": first_name, "last_name": last_name, "email": email, "phone": phone})
+    if (response.status_code != 200):
+        print ('All employees are busy. Try in 5 minutes. ')
+        exit()
     sub_selection()
     #answer_dict = json.loads(response.json())
     #print(answer_dict)

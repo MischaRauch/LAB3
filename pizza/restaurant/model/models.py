@@ -89,9 +89,8 @@ class orders(models.Model):
     customer_id = models.ForeignKey(customer, on_delete=models.CASCADE)    #FK 
     total_price = models.FloatField(default=0) #calculated from drink, desert and pizza 
     total_discount= models.FloatField(default=0) # get boolean from costumer 
-    #order_time = models.DateTimeField('orderedTime',  default=datetime.now(), blank=True)
     order_time = models.DateTimeField('orderedTime',  default=timezone.localtime(timezone.now()), blank=True)
-    delivery_id = models.ForeignKey(delivery, on_delete=models.CASCADE)
+    delivery_id = models.ForeignKey(delivery, on_delete=models.CASCADE) #FK 
 
     def __str__(self):
         return str(self.order_id)

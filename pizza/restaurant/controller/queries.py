@@ -6,7 +6,8 @@ from restaurant.model.models import pizza_toppings
 from restaurant.model.models import topping
 from restaurant.model.models import pizza,desert,drink, address, customer, order_item, employee , orders, order_item, delivery 
 from django.utils.timezone import now 
-from datetime import date, datetime 
+
+from django.utils import timezone
 from django.db.models import F
 from datetime import datetime, timedelta 
 
@@ -149,18 +150,24 @@ def get_delivery_time_and_status_from_order2(order_id):
 
 def update_employee_status():
 	employees_delivering = employee.objects.filter(status_employee ='On delivery').values('employee_id')
-	current_time = datetime.now()
+	current_time = timezone.localtime(timezone.now())
 	for emp in employees_delivering:
-		print("EMPP ", delivery.objects.filter(employee_id = emp['employee_id'], status = 'Received by customer').values['delivery_id'])
-		deliveries = delivery.objects.filter(employee_id = emp['employee_id'], status = 'Received by customer').values['delivery_id'] 
+		#print("EMPP ", delivery.objects.filter(employee_id = emp['employee_id'], status = 'Received by customer').values('delivery_id'))
+		deliveries = delivery.objects.filter(employee_id = emp['employee_id']).values('delivery_id') 
 		should_you_update= True 
 		for deliv in deliveries:
-			ord = orders.objects.filter(deliery_id = deliv['delivery_id']).values['order_time'][0]
-			if (current_time - ord['order_time']) > 30*60:  
+
+			ord_1 = orders.objects.filter(delivery_id = deliv['delivery_id']).values('order_time')[0]
+			print (current_time)
+			print (ord_1['order_time'])
+			print ((current_time - ord_1['order_time']).total_seconds())
+			if (current_time - ord_1['order_time']).total_seconds() < 30*60:  
+				
 				should_you_update= False
 				break 
 		if should_you_update:
-			employee.objects.filter(employee_id=emp['employee_id']).update(status='Free')
+			print('pudating to free', employee)
+			employee.objects.filter(employee_id=emp['employee_id']).update(status_employee='Free')
 	return employees_delivering 
 
 
@@ -194,25 +201,28 @@ def create_new_order_new_customer(postal_code, country, street, house_number, ci
 	#create an address and customer 
 	new_customer = create_address_customer(postal_code= postal_code, country= country, street= street, house_number= house_number, city= city, first_name= first_name, last_name= last_name, email=email, phone= phone)
 	#FIND OUT CUSTOMER_ID to pass to new method
-	create_new_order_old_customer(new_customer.customer_id)
+	result = create_new_order_old_customer(new_customer.customer_id)
+	if result == False:
+		return False 
+	else: 
 	#has to return the order id not the customer
-	order = orders.objects.filter(customer_id=new_customer.customer_id).first()
-	return order
+		order = orders.objects.filter(customer_id=new_customer.customer_id).values('order_id').first()
+		return order
 
 def create_new_order_old_customer(customer_id):
 	#get customer postal code 
 	customer_postal_code= get_postal_code(customer_id)
 	#find out employee 
 	employee_object = get_employee_based_on_user_postal_code(customer_postal_code)
-	employee_delivery = employee.objects.filter(employee_id=employee_object.employee_id).values('status_employee') 
+	employee_delivery = employee.objects.filter(employee_id=employee_object.employee_id).values('status_employee', 'employee_id') 
 	#print("GOT HERE ",employee_object)
-	#print("GOT HERE 2",employee_delivery)
+	print("GOT HERE 2",employee_delivery)
 	for employ in employee_delivery:
 		emp = employ['status_employee']
 	#	print("WORKS ", emp)
-	#print("GOT HERE 3",employee_delivery['status_employee'])
-	#if emp == 'On delivery': 
-	#	return False 	
+	print("GOT HERE 3",emp)
+	if emp == 'On delivery': 
+		return False 	
 	employee.objects.filter(employee_id=employee_object.employee_id).update(status_employee='On delivery')
 	
 	#create delivery first 

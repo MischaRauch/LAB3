@@ -107,11 +107,9 @@ def create_customer(request):
         #postal_code, country, street, house_number, city, first_name, last_name, email, phone
         global new_order
         new_order = queries.create_new_order_new_customer(request.POST['postal_code'],request.POST['country'],request.POST['street'],request.POST['house_number'],request.POST['city'],request.POST['first_name'], request.POST['last_name'],request.POST['email'],request.POST['phone'])
-        print("GT HEREE")
-        print("NEW ORDER ",new_order)
-    else:
-        print('NO POST')
-   
+        if (new_order == False):
+             return HttpResponseNotAllowed('All deliveries are busy.')
+        print("NEW ORDER ",new_order)  
     return HttpResponse('Success')
 
 @csrf_exempt
