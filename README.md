@@ -1,6 +1,9 @@
 # Pizza Delivery System with MySQL Database
 ## Maastricht University | Course: Databases
 
+## [Demonstration Video](https://www.youtube.com/watch?v=0BGUbUTF7sU&ab_channel=MischaRauch)
+Click on the link above to view a demonstration of the final product.
+
 ## Overview
 This repository contains a Pizza delivery system backed by a MySQL database. The application is built using the Django framework, following the Model-View-Controller (MVC) architecture. Users can order pizzas and input their address via the terminal, and the data is subsequently stored in the database. This project was developed as a LAB for the Database course at Maastricht University.
 
